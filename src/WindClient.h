@@ -36,6 +36,9 @@ public:
     // Get last received values
     double getLastAWA() { return _lastAWA; }
     double getLastAWS() { return _lastAWS; }
+    double getLastSTW() { return _lastSTW; }
+    double getLastSOG() { return _lastSOG; }
+    double getLastCOG() { return _lastCOG; }
     bool isConnected() { return _connected; }
 
 private:
@@ -51,6 +54,9 @@ private:
     bool _connected;
     double _lastAWA;
     double _lastAWS;
+    double _lastSTW;
+    double _lastSOG;
+    double _lastCOG;
     unsigned long _successCount;
     unsigned long _failCount;
 

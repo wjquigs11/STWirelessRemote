@@ -91,11 +91,17 @@ static char readingsBuf[128];
 String getSensorReadings() {
   readings.clear();
 #ifdef SEATALK
-  readings["awa"] = seaTalkData->apparentWindAngle;
-  readings["aws"] = seaTalkData->apparentWindSpeed;
-  readings["stw"] = seaTalkData->speedThroughWater;
-  readings["sog"] = seaTalkData->speedOverGround;
-  readings["cog"] = seaTalkData->courseOverGround;
+  // Use SeaTalk bus data if available, otherwise fall back to WindClient
+  readings["awa"] = (seaTalkData->apparentWindAngle != 0.0) ? seaTalkData->apparentWindAngle
+                    : (windClient && windClient->isConnected()) ? windClient->getLastAWA() : 0.0;
+  readings["aws"] = (seaTalkData->apparentWindSpeed != 0.0) ? seaTalkData->apparentWindSpeed
+                    : (windClient && windClient->isConnected()) ? windClient->getLastAWS() : 0.0;
+  readings["stw"] = (seaTalkData->speedThroughWater != 0.0) ? seaTalkData->speedThroughWater
+                    : (windClient && windClient->isConnected()) ? windClient->getLastSTW() : 0.0;
+  readings["sog"] = (seaTalkData->speedOverGround != 0.0) ? seaTalkData->speedOverGround
+                    : (windClient && windClient->isConnected()) ? windClient->getLastSOG() : 0.0;
+  readings["cog"] = (seaTalkData->courseOverGround != 0.0) ? seaTalkData->courseOverGround
+                    : (windClient && windClient->isConnected()) ? windClient->getLastCOG() : 0.0;
 #else
   readings["sensor"] = "0";
 #endif

@@ -16,6 +16,9 @@ WindClient::WindClient(SeaTalk *seaTalk)
     _connected = false;
     _lastAWA = 0.0;
     _lastAWS = 0.0;
+    _lastSTW = 0.0;
+    _lastSOG = 0.0;
+    _lastCOG = 0.0;
     _successCount = 0;
     _failCount = 0;
 }
@@ -99,6 +102,39 @@ void WindClient::fetchReadings()
 
                 _lastAWS = aws;
                 _seaTalk->sendApparentWindSpeed(aws);
+                gotWind = true;
+            }
+
+            if (doc["stw"].is<const char*>() || doc["stw"].is<float>() || doc["stw"].is<double>())
+            {
+                double stw;
+                if (doc["stw"].is<const char*>())
+                    stw = atof(doc["stw"].as<const char*>());
+                else
+                    stw = doc["stw"].as<double>();
+                _lastSTW = stw;
+                gotWind = true;
+            }
+
+            if (doc["sog"].is<const char*>() || doc["sog"].is<float>() || doc["sog"].is<double>())
+            {
+                double sog;
+                if (doc["sog"].is<const char*>())
+                    sog = atof(doc["sog"].as<const char*>());
+                else
+                    sog = doc["sog"].as<double>();
+                _lastSOG = sog;
+                gotWind = true;
+            }
+
+            if (doc["cog"].is<const char*>() || doc["cog"].is<float>() || doc["cog"].is<double>())
+            {
+                double cog;
+                if (doc["cog"].is<const char*>())
+                    cog = atof(doc["cog"].as<const char*>());
+                else
+                    cog = doc["cog"].as<double>();
+                _lastCOG = cog;
                 gotWind = true;
             }
 
