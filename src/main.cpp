@@ -256,6 +256,7 @@ void loop() {
       webLoopCount++;
 #ifdef WEBSERIAL
       WebSerial.loop();
+      pollSerialConsole();
 #endif
 #ifdef WIFI
       if (WiFi.getMode() == WIFI_AP || WiFi.getMode() == WIFI_AP_STA)

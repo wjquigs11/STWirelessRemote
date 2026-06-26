@@ -71,6 +71,7 @@ extern String appToggleList[];
 using Handler = void(*)(String*, int);
 extern Handler appHandler;
 extern Handler togHandler;
+void pollSerialConsole();
 #endif
 #ifdef ELEGANTOTA
 #define ELEGANTOTA_USE_ASYNC_WEBSERVER 1
