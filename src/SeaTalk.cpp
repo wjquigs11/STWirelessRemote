@@ -5,6 +5,7 @@
 SeaTalk::SeaTalk(SignalManager *signalManager)
 {
     _mySerial.begin(4800, SWSERIAL_8S1, RX_IN, TX_OUT, true, 95);
+    pinMode(LED_PIN, OUTPUT);
     _signalManager = signalManager;
 }
 
