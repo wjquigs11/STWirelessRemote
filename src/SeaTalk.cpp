@@ -1,4 +1,5 @@
 #include "SeaTalk.h"
+#include "logto.h"
 
 /// @brief Seatalk class constructor
 /// @param signalManager Signal manager to send messages to other systems
@@ -40,28 +41,32 @@ int SeaTalk::checkBus()
             if (message[0] == 0x10 && message.size() == 4)
             {
                 double apparentWindAngle = ((message[2] << 8) | (message[3])) / 2.0;
-                Serial.printf("Apparent Wind Angle: %.1f degrees\n", apparentWindAngle);
+                snprintf(logbuf, LOGBUF_SIZE, "Apparent Wind Angle: %.1f degrees", apparentWindAngle);
+                log::toAll(logbuf);
                 _signalManager->UpdateApparentWindAngle(apparentWindAngle);
             }
             // Apparent Wind Speed
             else if (message[0] == 0x11 && message.size() == 4)
             {
                 double apparentWindSpeed = ((message[2] & 0x7f) + (message[3] & 0x0f) / 10.0);
-                Serial.printf("Apparent Wind Speed: %.1f knots\n", apparentWindSpeed);
+                snprintf(logbuf, LOGBUF_SIZE, "Apparent Wind Speed: %.1f knots", apparentWindSpeed);
+                log::toAll(logbuf);
                 _signalManager->UpdateApparentWindSpeed(apparentWindSpeed);
             }
             // Speed Through Water
             else if (message[0] == 0x20 && message.size() == 4)
             {
                 double speedThroughWater = ((message[3] << 8) | message[2]) / 10;
-                Serial.printf("Speed Through Water: %.1f knots\n", speedThroughWater);
+                snprintf(logbuf, LOGBUF_SIZE, "Speed Through Water: %.1f knots", speedThroughWater);
+                log::toAll(logbuf);
                 _signalManager->UpdateSpeedThroughWater(speedThroughWater);
             }
             // Speed Over Ground
             else if (message[0] == 0x52 && message.size() == 4)
             {
                 double speedOverGround = ((message[3] << 8) | message[2]) / 10;
-                Serial.printf("Speed Over Ground: %.1f knots\n", speedOverGround);
+                snprintf(logbuf, LOGBUF_SIZE, "Speed Over Ground: %.1f knots", speedOverGround);
+                log::toAll(logbuf);
                 _signalManager->UpdateSpeedOverGround(speedOverGround);
             }
             // Course Over Ground
@@ -70,14 +75,16 @@ int SeaTalk::checkBus()
                 uint8_t u = (message[1] & 0xf0) >> 4;
                 uint8_t vw = message[2];
                 double courseOverGround = (u & 0x3) * 90 + (vw & 0x3F) * 2 + ((u & 0xC) >> 2) / 2;
-                Serial.printf("Course Over Ground: %.1f degrees\n", courseOverGround);
+                snprintf(logbuf, LOGBUF_SIZE, "Course Over Ground: %.1f degrees", courseOverGround);
+                log::toAll(logbuf);
                 _signalManager->UpdateCourseOverGround(courseOverGround);
             }
             // Depth Below Transducer
             else if (message[0] == 0x00 && message.size() == 5)
             {
                 double depthBelowTransducer = (((message[4] >> 8) | message[3]) / 10);
-                Serial.printf("Depth Below Transducer %.1f Meters\n", depthBelowTransducer);
+                snprintf(logbuf, LOGBUF_SIZE, "Depth Below Transducer %.1f Meters", depthBelowTransducer);
+                log::toAll(logbuf);
             }
             // Auto Pilot Data
             else if (message[0] == 0x84 && message.size() == 9)
@@ -87,7 +94,8 @@ int SeaTalk::checkBus()
 
                 AutoPilotData pilotData;
                 pilotData.compassHeading = (u & 0x3) * 90 + (vw & 0x3F) * 2 + (u & 0xC ? (u & 0xC == 0xC ? 2 : 1) : 0);
-                Serial.printf("Auto Compass heading %.1f Degrees\n", pilotData.compassHeading);
+                snprintf(logbuf, LOGBUF_SIZE, "Auto Compass heading %.1f Degrees", pilotData.compassHeading);
+                log::toAll(logbuf);
 
                 uint8_t dir = (u & 0x80) >> 3;
                 if (dir == 1)
@@ -98,7 +106,8 @@ int SeaTalk::checkBus()
                 uint8_t v = (message[2] & 0xc0) >> 6;
                 uint8_t xy = message[3];
                 pilotData.autoPilotCourse = (v * 90) + (xy / 2);
-                Serial.printf("Auto Pilot Course= %.1f Degrees \n", pilotData.autoPilotCourse);
+                snprintf(logbuf, LOGBUF_SIZE, "Auto Pilot Course= %.1f Degrees", pilotData.autoPilotCourse);
+                log::toAll(logbuf);
 
                 uint8_t z = message[4];
                 if (z & 0x2 == 0)
@@ -130,7 +139,8 @@ int SeaTalk::checkBus()
 /// @param cmd Command to send
 void SeaTalk::sendCommand(commands cmd)
 {
-    Serial.println(cmd);
+    snprintf(logbuf, LOGBUF_SIZE, "%d", cmd);
+    log::toAll(logbuf);
     if (cmd == minus_1)
         send2ST(ST_Minus_1, 4);
     else if (cmd == plus_1)
@@ -203,13 +213,14 @@ bool SeaTalk::send2ST(const uint8_t cmd[], int bytes)
                 uint8_t nextByte = _mySerial.read();
                 if (nextByte != cmd[i])
                 {
-                    Serial.printf("Failed Byte Sent = %x byte received= %x \n", cmd[i], nextByte);
+                    snprintf(logbuf, LOGBUF_SIZE, "Failed Byte Sent = %x byte received= %x", cmd[i], nextByte);
+                    log::toAll(logbuf);
                     ok = false;
                 }
             }
             else
             {
-                Serial.println("Serial Not Available");
+                log::toAll("Serial Not Available");
                 ok = false;
             }
         }
@@ -218,16 +229,16 @@ bool SeaTalk::send2ST(const uint8_t cmd[], int bytes)
         {
             digitalWrite(LED_PIN, LOW);
             delay(100);
-            Serial.println("Command Sent");
+            //Serial.println("Command Sent");
             return ok;
         }
         j++;
-        Serial.println("Collision Detected");
+        log::toAll("Collision Detected");
         delay(random(2, 50));
         ok = true;
     }
 
-    Serial.println("Send Failed");
+    log::toAll("Send Failed");
     return false;
 }
 
@@ -239,5 +250,5 @@ void SeaTalk::checkClearToWrite()
         uint8_t inbyte = _mySerial.read();
         delay(3);
     }
-    Serial.println("Clear To Send");
+    //Serial.println("Clear To Send");
 }
