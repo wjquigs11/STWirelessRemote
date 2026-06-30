@@ -1,3 +1,6 @@
 {
-    "cmake.configureOnOpen": false
+    "clangd.arguments": [
+        "--compile-commands-dir=/Users/wjquigs/mnt/nfs/ESP/marine-instruments/STW-wjquigs-2/.cache/clangd",
+        "--query-driver=/Users/wjquigs/.platformio/packages/toolchain-*/bin/*,/Users/wjquigs/.platformio/packages/tool-*/bin/*"
+    ]
 }
