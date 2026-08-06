@@ -98,6 +98,36 @@
     }
 
     setInterval(updateLamp, 5000);
+
+    // Fetch N2K status and display counters
+    function fetchN2kStatus() {
+      fetch('/n2k.json')
+        .then(response => response.json())
+        .then(data => {
+          var n2kDiv = document.getElementById('n2k-counters');
+          if (n2kDiv) {
+            if (data.n2k_enabled === false) {
+              n2kDiv.innerHTML = '<p>N2K not enabled</p>';
+            } else {
+              n2kDiv.innerHTML = 
+                '<p><strong>N2K Counters</strong></p>' +
+                '<p>Received: ' + data.n2k_rx_msgs + ' msgs (' + data.n2k_rx_wind + ' wind)</p>' +
+                '<p>Sent: ' + data.n2k_tx_msgs + ' msgs (' + data.n2k_tx_wind + ' wind)</p>' +
+                '<p>Active: ' + (data.n2k_active ? 'Yes' : 'No') + '</p>' +
+                '<p>Last wind update: ' + data.n2k_last_wind_s + 's ago</p>';
+            }
+          }
+        })
+        .catch(err => {
+          var n2kDiv = document.getElementById('n2k-counters');
+          if (n2kDiv) {
+            n2kDiv.innerHTML = '<p>Unable to fetch N2K status</p>';
+          }
+        });
+    }
+
+    setInterval(fetchN2kStatus, 5000);
+    fetchN2kStatus(); // initial fetch
   </script>
 </body>
 </html>

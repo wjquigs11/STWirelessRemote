@@ -142,6 +142,28 @@ void processWebCommands() {
 #endif
 }
 
+// ─── N2K Status JSON endpoint ──────────────────────────────────────────────────
+
+String getN2kStatusJson() {
+  JsonDocument doc;
+#ifdef N2K
+  doc["n2k_rx_msgs"] = n2kMsgCount;
+  doc["n2k_rx_wind"] = n2kWindCount;
+  doc["n2k_tx_msgs"] = n2kMsgSentCount;
+  doc["n2k_tx_wind"] = n2kWindSentCount;
+  doc["n2k_open"] = n2kOpen;
+  doc["n2k_active"] = n2kWindActive;
+  doc["n2k_last_wind_s"] = n2kLastWindTime > 0 ? (millis() - n2kLastWindTime) / 1000 : 0;
+  doc["n2k_last_awa"] = n2kLastAWA;
+  doc["n2k_last_aws"] = n2kLastAWS;
+#else
+  doc["n2k_enabled"] = false;
+#endif
+  String json;
+  serializeJson(doc, json);
+  return json;
+}
+
 // ─── Main web server setup ─────────────────────────────────────────────────────
 
 void startWebServer() {
@@ -157,6 +179,14 @@ void startWebServer() {
     snprintf(logbuf, LOGBUF_SIZE, "hostname: %s, MAC: %s", host.c_str(), WiFi.macAddress().c_str());
     log::toAll(logbuf);
     request->send(200, "text/plain", logbuf);
+  });
+
+  // N2K status endpoint
+  server.on("/n2k.json", HTTP_GET, [](AsyncWebServerRequest *request) {
+    String json = getN2kStatusJson();
+    AsyncWebServerResponse *response = request->beginResponse(200, "application/json", json);
+    response->addHeader("Access-Control-Allow-Origin", "*");
+    request->send(response);
   });
 
   // Client time endpoint

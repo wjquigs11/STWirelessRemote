@@ -23,9 +23,12 @@ bool n2kOpen = false;
 bool n2kWindActive = false;  // true once we receive at least one wind PGN
 
 // Statistics
-unsigned long n2kMsgCount = 0;
-unsigned long n2kWindCount = 0;
+unsigned long n2kMsgCount = 0;      // total messages received
+unsigned long n2kWindCount = 0;     // wind messages received
 unsigned long n2kLastWindTime = 0;
+
+unsigned long n2kMsgSentCount = 0;  // total messages sent
+unsigned long n2kWindSentCount = 0; // wind messages sent
 
 // Last received values
 double n2kLastAWA = 0.0;  // degrees
@@ -160,8 +163,10 @@ void n2kStatus() {
     n2kWindActive ? "yes" : "no",
     n2kDebug ? "yes" : "no");
   log::toAll(logbuf);
-  snprintf(logbuf, LOGBUF_SIZE, "N2K: msgs=%lu wind=%lu lastWind=%lus ago",
-    n2kMsgCount, n2kWindCount,
+  snprintf(logbuf, LOGBUF_SIZE, "N2K: rx_msgs=%lu rx_wind=%lu tx_msgs=%lu tx_wind=%lu",
+    n2kMsgCount, n2kWindCount, n2kMsgSentCount, n2kWindSentCount);
+  log::toAll(logbuf);
+  snprintf(logbuf, LOGBUF_SIZE, "N2K: lastWind=%lus ago",
     n2kLastWindTime > 0 ? (millis() - n2kLastWindTime) / 1000 : 0);
   log::toAll(logbuf);
   if (n2kWindActive) {

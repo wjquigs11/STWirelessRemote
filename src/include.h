@@ -134,11 +134,15 @@ extern bool n2kWindActive;
 extern unsigned long n2kMsgCount;
 extern unsigned long n2kWindCount;
 extern unsigned long n2kLastWindTime;
+extern unsigned long n2kMsgSentCount;
+extern unsigned long n2kWindSentCount;
 extern double n2kLastAWA;
 extern double n2kLastAWS;
 void n2kSetup();
 void n2kLoop();
 void n2kStatus();
+// JSON endpoint handler for web interface
+String getN2kStatusJson();
 #endif
 
 // SeaTalk
