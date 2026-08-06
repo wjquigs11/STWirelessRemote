@@ -87,8 +87,8 @@ void startAppWebServer() {
     if (request->hasParam("timermin", true)) webOptions.timermin = request->getParam("timermin", true)->value().toInt();
     if (request->hasParam("timersec", true)) webOptions.timersec = request->getParam("timersec", true)->value().toInt();
     if (request->hasParam("windhost", true)) webOptions.windhost = request->getParam("windhost", true)->value();
-    if (request->hasParam("seatalkDebugRx", true)) webOptions.seatalkDebugRx = request->getParam("seatalkDebugRx", true)->value() == "on";
-    if (request->hasParam("seatalkDebugTx", true)) webOptions.seatalkDebugTx = request->getParam("seatalkDebugTx", true)->value() == "on";
+    webOptions.seatalkDebugRx = request->hasParam("seatalkDebugRx", true);
+    webOptions.seatalkDebugTx = request->hasParam("seatalkDebugTx", true);
     if (request->hasParam("headingOffset", true)) webOptions.headingOffset = request->getParam("headingOffset", true)->value().toInt();
     webOptions.xmitHeading = request->hasParam("xmitHeading", true);
     options->SaveWebOptions(webOptions);
