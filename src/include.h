@@ -126,6 +126,21 @@ void print_wakeup_reason();
 
 extern unsigned long now;
 
+// N2K CAN bus (optional alternate wind source)
+#ifdef N2K
+extern bool n2kDebug;
+extern bool n2kOpen;
+extern bool n2kWindActive;
+extern unsigned long n2kMsgCount;
+extern unsigned long n2kWindCount;
+extern unsigned long n2kLastWindTime;
+extern double n2kLastAWA;
+extern double n2kLastAWS;
+void n2kSetup();
+void n2kLoop();
+void n2kStatus();
+#endif
+
 // SeaTalk
 #ifdef SEATALK
 #include "SeaTalk.h"

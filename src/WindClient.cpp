@@ -47,6 +47,7 @@ void WindClient::beginHttp()
 
 void WindClient::loop()
 {
+    if (!enabled) return;
     if (!wifiConnected) return;
 
     unsigned long now = millis();
@@ -91,6 +92,10 @@ void WindClient::fetchReadings()
                 _seaTalk->sendApparentWindAngle(awa);
                 gotWind = true;
             }
+
+            // Inter-message gap to let the bus settle between consecutive sends
+            if (gotWind)
+                delay(50);
 
             if (doc["aws"].is<const char*>() || doc["aws"].is<float>() || doc["aws"].is<double>())
             {

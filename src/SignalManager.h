@@ -16,6 +16,7 @@ public:
     void UpdateSpeedThroughWater(double speed);
     void UpdateSpeedOverGround(double speed);
     void UpdateCourseOverGround(double courseOverGround);
+    void UpdateCompassHeading(double heading);
 
 private:
 #ifdef NMEA

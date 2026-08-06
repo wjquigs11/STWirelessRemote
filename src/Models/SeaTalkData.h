@@ -10,6 +10,7 @@ struct SeaTalkData
    double speedThroughWater;
    double speedOverGround;
    double courseOverGround;
+   double compassHeading;
 };
 
 #endif // SEATALKDATA_H

@@ -50,6 +50,12 @@ function SetOptions(data) {
     document.getElementById("timermin").value = data.timermin;
     document.getElementById("timersec").value = data.timersec;
     document.getElementById("windhost").value = data.windhost || "";
+    // Wind TCP toggle
+    var cb = document.getElementById("windtcp");
+    if (cb) {
+        cb.checked = data.windtcp !== false && data.windtcp !== 0;
+        updateWindTcpLabel(cb.checked);
+    }
 }
 
 function AddTimerOptions() {
@@ -83,7 +89,9 @@ function AddButtonOptions(dropdown) {
         { value: 4, text: "Auto" },
         { value: 5, text: "Stand By" },
         { value: 6, text: "Start Timer" },
-        { value: 7, text: "Wind Mode" }
+        { value: 7, text: "Wind Mode" },
+        { value: 8, text: "Tack Port" },
+        { value: 9, text: "Tack Starboard" }
     ];
 
     options.forEach(function(opt) {
@@ -92,4 +100,23 @@ function AddButtonOptions(dropdown) {
         option.innerHTML = opt.text;
         dropdown.appendChild(option);
     });
+}
+
+function updateWindTcpLabel(enabled) {
+    var span = document.getElementById("windtcp-status");
+    if (span) span.textContent = enabled ? "Connected" : "Disabled";
+}
+
+function toggleWindTcp(enabled) {
+    fetch('/windtcp?enabled=' + (enabled ? '1' : '0'))
+        .then(response => response.text())
+        .then(data => {
+            console.log("windtcp:", data);
+            updateWindTcpLabel(enabled);
+        })
+        .catch(error => {
+            console.error('Error toggling wind TCP:', error);
+            // Revert checkbox on failure
+            document.getElementById("windtcp").checked = !enabled;
+        });
 }

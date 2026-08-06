@@ -2,42 +2,39 @@
 <html>
 <head>
   <title>ESP Wi-Fi Manager</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" href="data:,">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link rel="icon" type="image/png" href="favicon.png">
   <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
-  <div class="topnav">
-    <h1>ESP Wi-Fi Manager</h1>
-  </div>
-  <div class="content">
-    <div class="card-grid">
-      <div class="card">
-        <form id="wifi-form" action="/wifimanager" method="POST">
-          <p>
-            <label for="hostname">HOSTNAME</label>
-            <input type="text" id="hostname" name="hostname"><br>
-            <label for="ssid">SSID</label>
-            <input type="text" id ="ssid" name="ssid"><br>
-            <label for="pass">Password</label>
-            <input type="text" id ="pass" name="pass"><br>
-            <label for="ip">IP Address</label>
-            <input type="text" id ="ip" name="ip"><br>
-            <label for="gateway">Gateway Address</label>
-            <input type="text" id ="gateway" name="gateway"><br>
-            <input type ="submit" value ="Submit">
-          </p>
-        </form>
-        <div id="notify" style="display:none;background:#0A1128;color:white;padding:12px 20px;border-radius:6px;margin-top:10px;font-size:1.1rem;">Reconnecting...</div>
-      </div>
-      <div class="card">
-        <p><strong>Saved Networks</strong></p>
-        <div id="ssid-list"><em>Loading...</em></div>
-        <br>
-        <button id="delete-btn" onclick="deleteSelected()" style="background-color:#F44336;color:white;border:none;padding:10px 20px;border-radius:4px;font-size:1rem;cursor:pointer;">Delete Selected</button>
-      </div>
+  <h2>ESP Wi-Fi Manager</h2>
+
+  <div class="card-grid">
+    <div class="card">
+      <form id="wifi-form" action="/wifimanager" method="POST">
+        <label for="hostname">HOSTNAME</label>
+        <input type="text" id="hostname" name="hostname">
+        <label for="ssid">SSID</label>
+        <input type="text" id="ssid" name="ssid">
+        <label for="pass">Password</label>
+        <input type="text" id="pass" name="pass">
+        <label for="ip">IP Address</label>
+        <input type="text" id="ip" name="ip">
+        <label for="gateway">Gateway Address</label>
+        <input type="text" id="gateway" name="gateway">
+        <input type="submit" value="Submit">
+      </form>
+      <div id="notify" style="display:none;background:#034078;color:white;padding:12px 20px;border-radius:6px;margin-top:10px;font-size:1.1rem;">Reconnecting...</div>
+    </div>
+    <div class="card">
+      <p><strong>Saved Networks</strong></p>
+      <div id="ssid-list"><em>Loading...</em></div>
+      <br>
+      <button id="delete-btn" onclick="deleteSelected()" style="background-color:#F44336;">Delete Selected</button>
     </div>
   </div>
+
+  <script src="menu.js"></script>
   <script>
     function loadSSIDs() {
       fetch('/wifilist')

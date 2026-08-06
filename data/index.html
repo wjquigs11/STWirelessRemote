@@ -1,44 +1,103 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>NautiControl Seatalk</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ST2000 Remote</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="stylesheet" type="text/css" href="style.css">
   <script src="client-time.js"></script>
 </head>
 <body>
-  <header>
-    <nav>
-      <a href="/index.html" class="active">Home</a>
-      <a href="/setup.html">Setup</a>
-      <a href="/display.html">Display</a>
-      <a href="/wifimanager">WiFi</a>
-    </nav>
-    <h1>NautiControl Seatalk</h1>
-  </header>
-  <main>
-    <h2>Boat Controls</h2>
-    <div class="button-row">
-      <button onclick="SendControl('minus1');">-1</button>
-      <button onclick="SendControl('plus1');">+1</button>
-    </div>
+  <h2>ST2000 Remote</h2>
 
-    <div class="button-row">
-      <button onclick="SendControl('minus10');">-10</button>
-      <button onclick="SendControl('plus10');">+10</button>
-    </div>
+  <div class="status-lamp">
+    <img id="wind-lamp" src="red.png" alt="Wind status">
+    <span id="wind-status">No wind data</span>
+  </div>
 
-    <div class="button-row">
-      <button onclick="SendControl('auto');">Auto</button>
-      <button onclick="SendControl('standby');">Standby</button>
-    </div>
+  <div class="button-row">
+    <button onclick="SendControl('minus1');">-1</button>
+    <button onclick="SendControl('plus1');">+1</button>
+  </div>
 
-    <div class="button-row">
-      <button onclick="SendControl('wind');">Auto Wind</button>
-      <button onclick="SendControl('starttimer');">Start Timer</button>
+  <div class="button-row">
+    <button onclick="SendControl('minus10');">-10</button>
+    <button onclick="SendControl('plus10');">+10</button>
+  </div>
+
+  <div class="button-row">
+    <button onclick="SendControl('auto');">Auto</button>
+    <button onclick="SendControl('standby');">Standby</button>
+  </div>
+
+  <div class="button-row">
+    <button onclick="SendControl('tackport');">Tack Port</button>
+    <button onclick="SendControl('tackstarboard');">Tack Stbd</button>
+  </div>
+
+  <div class="button-row">
+    <button onclick="SendControl('wind');">Auto Wind</button>
+    <button onclick="SendControl('starttimer');">Start Timer</button>
+  </div>
+
+  <div class="button-row">
+    <button onclick="SendControl('tackport');">Tack Port</button>
+    <button onclick="SendControl('tackstarboard');">Tack Stbd</button>
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-title">Compass Heading</div>
+      <div class="reading"><span id="hdg">--</span>&deg;</div>
     </div>
-  </main>
+    <div class="card">
+      <div class="card-title">Apparent Wind Angle</div>
+      <div class="reading"><span id="awa">--</span>&deg;</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Apparent Wind Speed</div>
+      <div class="reading"><span id="aws">--</span> kts</div>
+    </div>
+  </div>
+
+  <script src="menu.js"></script>
   <script src="nauticontrol.js"></script>
+  <script>
+    var lastWindUpdate = 0;
+
+    function updateLamp() {
+      var lamp = document.getElementById('wind-lamp');
+      var status = document.getElementById('wind-status');
+      var elapsed = Date.now() - lastWindUpdate;
+      if (lastWindUpdate === 0 || elapsed >= 30000) {
+        lamp.src = 'red.png';
+        status.textContent = 'No wind data';
+      } else {
+        lamp.src = 'green.png';
+        status.textContent = 'Wind OK';
+      }
+    }
+
+    if (!!window.EventSource) {
+      var source = new EventSource('/events');
+      source.addEventListener('new_readings', function(e) {
+        var data = JSON.parse(e.data);
+        if (data.hdg !== undefined) {
+          document.getElementById('hdg').innerHTML = parseFloat(data.hdg).toFixed(1);
+        }
+        if (data.awa !== undefined) {
+          document.getElementById('awa').innerHTML = parseFloat(data.awa).toFixed(1);
+          lastWindUpdate = Date.now();
+        }
+        if (data.aws !== undefined) {
+          document.getElementById('aws').innerHTML = parseFloat(data.aws).toFixed(1);
+          lastWindUpdate = Date.now();
+        }
+        updateLamp();
+      }, false);
+    }
+
+    setInterval(updateLamp, 5000);
+  </script>
 </body>
 </html>

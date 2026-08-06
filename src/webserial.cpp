@@ -5,8 +5,8 @@ bool debugFlag = false;
 
 // ─── App-specific handlers ─────────────────────────────────────────────────────
 #define APPHANDLER
-String appCommandList[] = {"st", "wind", ""};
-String appToggleList[] = {"stdebug", ""};
+String appCommandList[] = {"st", "wind", "n2k", "windtcp", ""};
+String appToggleList[] = {"stdebug", "n2kdebug", ""};
 
 void myAppHandler(String* words, int totalWords) {
   String command = words[0];
@@ -32,6 +32,20 @@ void myAppHandler(String* words, int totalWords) {
     windClientStatus();
     return;
   }
+  if (command == "windtcp") {
+    if (windClient) {
+      windClient->setEnabled(!windClient->enabled);
+      snprintf(logbuf, LOGBUF_SIZE, "WindClient TCP: %s", windClient->enabled ? "on" : "off");
+      log::toAll(logbuf);
+    }
+    return;
+  }
+#endif
+#ifdef N2K
+  if (command == "n2k") {
+    n2kStatus();
+    return;
+  }
 #endif
 }
 
@@ -45,6 +59,14 @@ void myToggleHandler(String* words, int totalWords) {
     log::toAll(logbuf);
     return;
   }
+#ifdef N2K
+  if (toggle.startsWith("n2kdebug")) {
+    n2kDebug = !n2kDebug;
+    snprintf(logbuf, LOGBUF_SIZE, "n2kDebug: %s", n2kDebug ? "on" : "off");
+    log::toAll(logbuf);
+    return;
+  }
+#endif
 #endif
 }
 
@@ -205,6 +227,13 @@ static void handleCommand(String dataS) {
     log::toAll(logbuf);
     snprintf(logbuf, LOGBUF_SIZE, "uptime: %lu s", millis() / 1000);
     log::toAll(logbuf);
+#ifdef SEATALK
+    extern unsigned long stRxPackets;
+    extern unsigned long stTxPackets;
+    extern unsigned long stTxFails;
+    snprintf(logbuf, LOGBUF_SIZE, "SeaTalk: rx=%lu tx=%lu txFail=%lu", stRxPackets, stTxPackets, stTxFails);
+    log::toAll(logbuf);
+#endif
     return;
   }
 

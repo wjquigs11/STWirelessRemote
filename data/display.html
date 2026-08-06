@@ -2,45 +2,37 @@
 <html>
 <head>
   <title>NautiControl Seatalk</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
-  <header>
-    <nav>
-      <a href="/index.html">Home</a>
-      <a href="/setup.html">Setup</a>
-      <a href="/display.html" class="active">Display</a>
-      <a href="/wifimanager">WiFi</a>
-    </nav>
-    <h1>NautiControl Seatalk</h1>
-  </header>
-  <main>
-    <h2>Boat Display</h2>
-    <div class="card-grid">
-      <div class="card">
-        <div class="card-title">Apparent Wind Angle</div>
-        <div class="reading"><span id="awa">--</span>&deg;</div>
-      </div>
-      <div class="card">
-        <div class="card-title">Apparent Wind Speed</div>
-        <div class="reading"><span id="aws">--</span> kts</div>
-      </div>
-      <div class="card">
-        <div class="card-title">Speed Through Water</div>
-        <div class="reading"><span id="stw">--</span> kts</div>
-      </div>
-      <div class="card">
-        <div class="card-title">Speed Over Ground</div>
-        <div class="reading"><span id="sog">--</span> kts</div>
-      </div>
-      <div class="card">
-        <div class="card-title">Course Over Ground</div>
-        <div class="reading"><span id="cog">--</span>&deg;</div>
-      </div>
+  <h2>Boat Display</h2>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-title">Apparent Wind Angle</div>
+      <div class="reading"><span id="awa">--</span>&deg;</div>
     </div>
-  </main>
+    <div class="card">
+      <div class="card-title">Apparent Wind Speed</div>
+      <div class="reading"><span id="aws">--</span> kts</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Speed Through Water</div>
+      <div class="reading"><span id="stw">--</span> kts</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Speed Over Ground</div>
+      <div class="reading"><span id="sog">--</span> kts</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Course Over Ground</div>
+      <div class="reading"><span id="cog">--</span>&deg;</div>
+    </div>
+  </div>
+
+  <script src="menu.js"></script>
   <script>
     if (!!window.EventSource) {
       var source = new EventSource('/events');

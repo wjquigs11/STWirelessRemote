@@ -7,14 +7,13 @@ html {
 h1 {
   font-size: 1.8rem;
   color: white;
-  text-align: center;
-  margin-top: 0;
-  margin-bottom: 0.5em;
 }
 
 h2 {
+  font-family: Arial;
+  font-size: 2.5rem;
   text-align: center;
-  font-size: 1.4rem;
+  color: #333;
 }
 
 p {
@@ -22,127 +21,43 @@ p {
 }
 
 body {
-  background: linear-gradient(to bottom, #87CEEB, #FFF);
-  color: #333;
   margin: 0;
-  padding: 0;
+  padding: 20px;
+  background-color: #f5f5f5;
+  position: relative;
 }
 
 a {
   text-decoration: none;
-  color: #333;
+  color: #034078;
 }
 
 a:hover {
   text-decoration: underline;
 }
 
-/* Navigation styles */
-nav {
-  display: flex;
-  justify-content: center;
-  background-color: #FFF;
-  border-bottom: 1px solid #CCC;
+/* ── Navigation ── */
+.topnav {
+  overflow: hidden;
+  background-color: #0A1128;
+  padding: 10px;
 }
 
-nav a {
-  display: block;
-  padding: 0.5em 1em;
-  border: none;
-  border-radius: 3px;
-  background-color: #4CAF50;
-  color: #FFF;
-  margin: 0.5em;
-  font-size: 1.2em;
-  cursor: pointer;
+/* ── Generic layout ── */
+.reading {
+  font-size: 2.8rem;
 }
 
-nav a.active {
-  background-color: #87CEEB;
-}
-
-/* Header styles */
-header {
-  background-color: #87CEEB;
-  padding: 1em;
-}
-
-/* Button styles */
-button {
-  background-color: #4CAF50;
-  color: #FFF;
-  border: none;
-  border-radius: 3px;
-  padding: 0.5em 1em;
-  margin: 0.5em;
-  font-size: 1em;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #3E8E41;
-}
-
-.button-row {
-  display: flex;
-  justify-content: center;
-  margin: 0.5em;
-}
-
-.button-row button {
-  flex: 1;
-  margin: 0.5em;
-  max-width: 200px;
-}
-
-/* Form styles */
-form {
-  margin: 1em;
-}
-
-label {
-  display: block;
-  margin-bottom: 0.5em;
-}
-
-select {
-  width: 100%;
-  padding: 0.5em;
-  border: 1px solid #CCC;
-  border-radius: 3px;
-  font-size: 1em;
-  margin-bottom: 1em;
-}
-
-input[type="submit"] {
-  background-color: #4CAF50;
-  color: #FFF;
-  border: none;
-  border-radius: 3px;
-  padding: 0.5em 1em;
-  margin: 1em 0;
-  font-size: 1em;
-  cursor: pointer;
-}
-
-input[type="submit"]:hover {
-  background-color: #3E8E41;
-}
-
-.form-container {
-  visibility: collapse;
-}
-
-.message-container {
-  visibility: collapse;
-}
-
-/* Card/reading styles */
 .content {
   padding: 5%;
   text-align: center;
 }
 
+.container {
+  margin-bottom: 20px;
+}
+
+/* ── Card grid ── */
 .card-grid {
   max-width: 1200px;
   margin: 0 auto;
@@ -169,18 +84,188 @@ input[type="submit"]:hover {
 }
 
 .card-title {
-  font-size: 1rem;
+  font-size: 1.2rem;
   font-weight: bold;
   color: #034078;
 }
 
-.reading {
-  font-size: 2.4rem;
-  margin-top: 0.5em;
+/* ── Buttons ── */
+button,
+.button,
+.multibutton {
+  background-color: #F44336;
+  border: none;
+  color: white;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 18px;
+  border-radius: 4px;
+  padding: 0.6em 1.2em;
+  margin: 0.25em;
+  cursor: pointer;
 }
 
-/* Topnav for settings page compatibility */
-.topnav {
-  overflow: hidden;
-  background-color: #0A1128;
+button:hover {
+  background-color: #d32f2f;
+}
+
+button:active {
+  background-color: #b71c1c;
+}
+
+.button-row {
+  display: flex;
+  justify-content: center;
+  margin: 0.25em;
+}
+
+.button-row button {
+  flex: 1;
+  margin: 0.25em;
+  max-width: 200px;
+}
+
+/* ── Status lamp ── */
+.status-lamp {
+  text-align: center;
+  margin: 0.5em 0;
+}
+
+.status-lamp img {
+  width: 32px;
+  height: 32px;
+  vertical-align: middle;
+}
+
+.status-lamp span {
+  font-size: 0.9rem;
+  color: #333;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+/* ── Page card ── */
+.page-card {
+  max-width: min(90vw, 400px);
+  margin: 10px auto;
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  text-align: center;
+  box-sizing: border-box;
+}
+
+/* ── Page heading ── */
+.page-h1 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+/* ── Settings page ── */
+.settings-content {
+  max-width: 600px;
+  margin: 0 auto;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+/* ── Form styles ── */
+form {
+  margin: 1em;
+  text-align: left;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5em;
+  color: #333;
+  font-size: 1rem;
+}
+
+select {
+  width: 100%;
+  padding: 0.5em;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1em;
+  margin-bottom: 1em;
+}
+
+input[type="text"] {
+  width: 100%;
+  padding: 0.5em;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1em;
+  margin-bottom: 1em;
+  box-sizing: border-box;
+}
+
+input[type="submit"],
+.pot-submit {
+  background-color: #034078;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.6em 1.2em;
+  margin: 1em 0;
+  font-size: 1rem;
+  cursor: pointer;
+  width: 100%;
+}
+
+input[type="submit"]:hover,
+.pot-submit:hover {
+  background-color: #023056;
+}
+
+input[type="submit"]:active,
+.pot-submit:active {
+  background-color: #011d34;
+}
+
+.form-container {
+  visibility: collapse;
+}
+
+.message-container {
+  visibility: collapse;
+}
+
+/* ── Wind stats ── */
+.wind-stats {
+  text-align: center;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  background-color: #f9f9f9;
+}
+
+.wind-stats h3 {
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+.stats-row {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+
+.stats-row > div {
+  margin: 5px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  body { padding: 10px; }
+  h2 { font-size: 1.8rem; }
+  .card-grid { grid-gap: 1rem; padding: 0.5em; }
+  .reading { font-size: 2.2rem; }
+  .button-row button { font-size: 16px; }
 }

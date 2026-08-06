@@ -10,7 +10,9 @@ enum commands : int
     auto_but = 4,
     standby_but = 5,
     start_timer = 6,
-    wind_mode = 7
+    wind_mode = 7,
+    tack_port = 8,
+    tack_starboard = 9
 };
 
 #endif

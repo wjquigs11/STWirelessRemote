@@ -41,6 +41,10 @@ public:
     double getLastCOG() { return _lastCOG; }
     bool isConnected() { return _connected; }
 
+    // Enable/disable TCP polling
+    bool enabled = false;
+    void setEnabled(bool en) { enabled = en; if (!en && _httpStarted) { _http.end(); _httpStarted = false; _connected = false; } }
+
 private:
     SeaTalk *_seaTalk;
     HTTPClient _http;

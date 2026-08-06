@@ -47,3 +47,8 @@ void SignalManager::UpdateCourseOverGround(double courseOverGround)
     _nmea->updateCOG(courseOverGround);
 #endif
 }
+
+void SignalManager::UpdateCompassHeading(double heading)
+{
+    _seaTalkData->compassHeading = heading;
+}

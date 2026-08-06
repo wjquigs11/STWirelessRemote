@@ -150,6 +150,10 @@ void setup() {
   log::toAll("WindClient initialized");
 #endif
 
+#ifdef N2K
+  n2kSetup();
+#endif
+
 #ifdef WIFI
   host = preferences.getString("hostname", "ESPmcu");
   snprintf(logbuf, LOGBUF_SIZE, "hostname: %s", host.c_str());
@@ -272,6 +276,10 @@ void loop() {
       processWebCommands();
       // Process wind client (SSE from Garmin-N2K-Mast-Rotation)
       if (windClient) windClient->loop();
+#endif
+
+#ifdef N2K
+      n2kLoop();
 #endif
 
 #ifdef DEEPSLEEP

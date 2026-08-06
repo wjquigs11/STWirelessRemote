@@ -40,6 +40,10 @@ void startAppWebServer() {
         commandStack.push(start_timer);
       } else if (p->value() == "wind") {
         commandStack.push(wind_mode);
+      } else if (p->value() == "tackport") {
+        commandStack.push(tack_port);
+      } else if (p->value() == "tackstarboard") {
+        commandStack.push(tack_starboard);
       }
     }
     request->send(200);
@@ -60,7 +64,8 @@ void startAppWebServer() {
     response->printf("\"button8opt\": %d, \n", webOptions.button8);
     response->printf("\"timermin\": %d, \n", webOptions.timermin);
     response->printf("\"timersec\": %d, \n", webOptions.timersec);
-    response->printf("\"windhost\": \"%s\" \n", webOptions.windhost.c_str());
+    response->printf("\"windhost\": \"%s\", \n", webOptions.windhost.c_str());
+    response->printf("\"windtcp\": %s \n", (windClient && windClient->enabled) ? "true" : "false");
     response->print("}");
     request->send(response);
   });
@@ -82,6 +87,22 @@ void startAppWebServer() {
     if (windClient) windClient->setServerHost(webOptions.windhost.c_str());
     request->send(200);
   });
+
+  // Wind TCP toggle endpoint
+  server.on("/windtcp", HTTP_GET, [](AsyncWebServerRequest *request) {
+    if (request->hasParam("enabled")) {
+      bool en = request->getParam("enabled")->value() == "1";
+      if (windClient) {
+        windClient->setEnabled(en);
+        snprintf(logbuf, LOGBUF_SIZE, "WindClient TCP: %s (via web)", en ? "enabled" : "disabled");
+        log::toAll(logbuf);
+      }
+      request->send(200, "text/plain", en ? "enabled" : "disabled");
+    } else {
+      // No param: just return current state
+      request->send(200, "text/plain", (windClient && windClient->enabled) ? "enabled" : "disabled");
+    }
+  });
 #endif
 }
 
@@ -102,6 +123,8 @@ String getSensorReadings() {
                     : (windClient && windClient->isConnected()) ? windClient->getLastSOG() : 0.0;
   readings["cog"] = (seaTalkData->courseOverGround != 0.0) ? seaTalkData->courseOverGround
                     : (windClient && windClient->isConnected()) ? windClient->getLastCOG() : 0.0;
+  if (seaTalkData->compassHeading != 0.0)
+    readings["hdg"] = seaTalkData->compassHeading;
 #else
   readings["sensor"] = "0";
 #endif
