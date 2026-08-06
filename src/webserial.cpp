@@ -53,9 +53,9 @@ void myToggleHandler(String* words, int totalWords) {
   String toggle = words[0];
 #ifdef SEATALK
   if (toggle.startsWith("stdebug")) {
-    extern bool stDebug;
-    stDebug = !stDebug;
-    snprintf(logbuf, LOGBUF_SIZE, "stDebug: %s", stDebug ? "on" : "off");
+    extern bool seatalkDebugTx;
+    seatalkDebugTx = !seatalkDebugTx;
+    snprintf(logbuf, LOGBUF_SIZE, "seatalkDebugTx: %s", seatalkDebugTx ? "on" : "off");
     log::toAll(logbuf);
     return;
   }
