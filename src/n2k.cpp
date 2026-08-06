@@ -13,8 +13,8 @@
 
 // ─── Configuration ─────────────────────────────────────────────────────────────
 // ESP32 native CAN bus pins - adjust for your hardware
-#define N2K_CAN_TX_PIN GPIO_NUM_5
-#define N2K_CAN_RX_PIN GPIO_NUM_4
+#define N2K_CAN_TX_PIN GPIO_NUM_26
+#define N2K_CAN_RX_PIN GPIO_NUM_27
 
 // ─── State ─────────────────────────────────────────────────────────────────────
 tNMEA2000 *n2kBus = nullptr;
