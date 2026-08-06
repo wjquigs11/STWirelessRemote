@@ -147,6 +147,8 @@ String getN2kStatusJson();
 
 // SeaTalk
 #ifdef SEATALK
+extern bool seatalkDebugRx;   // debug for received messages (default true)
+extern bool seatalkDebugTx;  // debug for transmitted messages (default false)
 #include "SeaTalk.h"
 #include "RemoteControl.h"
 #include "Options.h"

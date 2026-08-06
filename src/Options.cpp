@@ -18,6 +18,8 @@ void Options::SaveWebOptions(WebOptions webOptions)
     _preferences.putInt("timermin", webOptions.timermin);
     _preferences.putInt("timersec", webOptions.timersec);
     _preferences.putString("windhost", webOptions.windhost);
+    _preferences.putBool("seatalkDebugRx", webOptions.seatalkDebugRx);
+    _preferences.putBool("seatalkDebugTx", webOptions.seatalkDebugTx);
 }
 
 WebOptions Options::GetWebOptions()
@@ -34,5 +36,7 @@ WebOptions Options::GetWebOptions()
     webOptions.timermin = _preferences.getInt("timermin", 5);
     webOptions.timersec = _preferences.getInt("timersec", 0);
     webOptions.windhost = _preferences.getString("windhost", WIND_SERVER_DEFAULT_HOST);
+    webOptions.seatalkDebugRx = _preferences.getBool("seatalkDebugRx", true);
+    webOptions.seatalkDebugTx = _preferences.getBool("seatalkDebugTx", false);
     return webOptions;
 }

@@ -14,6 +14,10 @@
 #include "Models/AutoPilotData.h"
 #include "SignalManager.h"
 
+// Debug flags (extern'd in SeaTalk.cpp)
+extern bool seatalkDebugRx;   // debug for received messages (default true)
+extern bool seatalkDebugTx;  // debug for transmitted messages (default false)
+
 class SeaTalk
 {
 

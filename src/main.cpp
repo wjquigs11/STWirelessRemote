@@ -52,7 +52,7 @@ RemoteControl *remoteControl = nullptr;
 Options *options = nullptr;
 SeaTalkData *seaTalkData = nullptr;
 SignalManager *signalManager = nullptr;
-bool stDebug = false;
+bool seatalkDebug = false;
 WindClient *windClient = nullptr;
 #endif
 
@@ -141,11 +141,13 @@ void setup() {
   signalManager = new SignalManager(seaTalkData);
   seatalk = new SeaTalk(signalManager);
   remoteControl = new RemoteControl(seatalk, options);
+  WebOptions webOpts = options->GetWebOptions();
+  seatalkDebugRx = webOpts.seatalkDebugRx;
+  seatalkDebugTx = webOpts.seatalkDebugTx;
   log::toAll("SeaTalk initialized");
 
   // Initialize WindClient (connects to Garmin-N2K-Mast-Rotation ESP32)
   windClient = new WindClient(seatalk);
-  WebOptions webOpts = options->GetWebOptions();
   windClient->setServerHost(webOpts.windhost.c_str());
   log::toAll("WindClient initialized");
 #endif

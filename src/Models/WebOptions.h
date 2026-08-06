@@ -18,6 +18,8 @@ struct WebOptions
     int timermin;
     int timersec;
     String windhost;
+    bool seatalkDebugRx;   // debug for received messages (default true)
+    bool seatalkDebugTx;  // debug for transmitted messages (default false)
 };
 
 #endif

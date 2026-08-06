@@ -65,7 +65,9 @@ void startAppWebServer() {
     response->printf("\"timermin\": %d, \n", webOptions.timermin);
     response->printf("\"timersec\": %d, \n", webOptions.timersec);
     response->printf("\"windhost\": \"%s\", \n", webOptions.windhost.c_str());
-    response->printf("\"windtcp\": %s \n", (windClient && windClient->enabled) ? "true" : "false");
+    response->printf("\"windtcp\": %s, \n", (windClient && windClient->enabled) ? "true" : "false");
+    response->printf("\"seatalkDebugRx\": %s, \n", webOptions.seatalkDebugRx ? "true" : "false");
+    response->printf("\"seatalkDebugTx\": %s \n", webOptions.seatalkDebugTx ? "true" : "false");
     response->print("}");
     request->send(response);
   });
@@ -83,6 +85,8 @@ void startAppWebServer() {
     if (request->hasParam("timermin", true)) webOptions.timermin = request->getParam("timermin", true)->value().toInt();
     if (request->hasParam("timersec", true)) webOptions.timersec = request->getParam("timersec", true)->value().toInt();
     if (request->hasParam("windhost", true)) webOptions.windhost = request->getParam("windhost", true)->value();
+    if (request->hasParam("seatalkDebugRx", true)) webOptions.seatalkDebugRx = request->getParam("seatalkDebugRx", true)->value() == "on";
+    if (request->hasParam("seatalkDebugTx", true)) webOptions.seatalkDebugTx = request->getParam("seatalkDebugTx", true)->value() == "on";
     options->SaveWebOptions(webOptions);
     if (windClient) windClient->setServerHost(webOptions.windhost.c_str());
     request->send(200);
@@ -156,8 +160,12 @@ String getN2kStatusJson() {
   doc["n2k_last_wind_s"] = n2kLastWindTime > 0 ? (millis() - n2kLastWindTime) / 1000 : 0;
   doc["n2k_last_awa"] = n2kLastAWA;
   doc["n2k_last_aws"] = n2kLastAWS;
+  doc["seatalkDebugRx"] = seatalkDebugRx;
+  doc["seatalkDebugTx"] = seatalkDebugTx;
 #else
   doc["n2k_enabled"] = false;
+  doc["seatalkDebugRx"] = false;
+  doc["seatalkDebugTx"] = false;
 #endif
   String json;
   serializeJson(doc, json);

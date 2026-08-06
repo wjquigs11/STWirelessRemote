@@ -6,6 +6,10 @@ unsigned long stRxPackets = 0;
 unsigned long stTxPackets = 0;
 unsigned long stTxFails = 0;
 
+// Debug flags
+bool seatalkDebugRx = true;   // debug for received messages (default true)
+bool seatalkDebugTx = false;  // debug for transmitted messages (default false)
+
 /// @brief Seatalk class constructor
 /// @param signalManager Signal manager to send messages to other systems
 SeaTalk::SeaTalk(SignalManager *signalManager)
@@ -47,8 +51,10 @@ int SeaTalk::checkBus()
             {
                 stRxPackets++;
                 double apparentWindAngle = ((message[2] << 8) | (message[3])) / 2.0;
-                snprintf(logbuf, LOGBUF_SIZE, "Apparent Wind Angle: %.1f degrees", apparentWindAngle);
-                log::toAll(logbuf);
+                if (seatalkDebugRx) {
+                    snprintf(logbuf, LOGBUF_SIZE, "ST RX: Apparent Wind Angle: %.1f degrees", apparentWindAngle);
+                    log::toAll(logbuf);
+                }
                 _signalManager->UpdateApparentWindAngle(apparentWindAngle);
             }
             // Apparent Wind Speed
@@ -56,8 +62,10 @@ int SeaTalk::checkBus()
             {
                 stRxPackets++;
                 double apparentWindSpeed = ((message[2] & 0x7f) + (message[3] & 0x0f) / 10.0);
-                snprintf(logbuf, LOGBUF_SIZE, "Apparent Wind Speed: %.1f knots", apparentWindSpeed);
-                log::toAll(logbuf);
+                if (seatalkDebugRx) {
+                    snprintf(logbuf, LOGBUF_SIZE, "ST RX: Apparent Wind Speed: %.1f knots", apparentWindSpeed);
+                    log::toAll(logbuf);
+                }
                 _signalManager->UpdateApparentWindSpeed(apparentWindSpeed);
             }
             // Speed Through Water
@@ -65,8 +73,10 @@ int SeaTalk::checkBus()
             {
                 stRxPackets++;
                 double speedThroughWater = ((message[3] << 8) | message[2]) / 10;
-                snprintf(logbuf, LOGBUF_SIZE, "Speed Through Water: %.1f knots", speedThroughWater);
-                log::toAll(logbuf);
+                if (seatalkDebugRx) {
+                    snprintf(logbuf, LOGBUF_SIZE, "ST RX: Speed Through Water: %.1f knots", speedThroughWater);
+                    log::toAll(logbuf);
+                }
                 _signalManager->UpdateSpeedThroughWater(speedThroughWater);
             }
             // Speed Over Ground
@@ -74,8 +84,10 @@ int SeaTalk::checkBus()
             {
                 stRxPackets++;
                 double speedOverGround = ((message[3] << 8) | message[2]) / 10;
-                snprintf(logbuf, LOGBUF_SIZE, "Speed Over Ground: %.1f knots", speedOverGround);
-                log::toAll(logbuf);
+                if (seatalkDebugRx) {
+                    snprintf(logbuf, LOGBUF_SIZE, "ST RX: Speed Over Ground: %.1f knots", speedOverGround);
+                    log::toAll(logbuf);
+                }
                 _signalManager->UpdateSpeedOverGround(speedOverGround);
             }
             // Course Over Ground
@@ -85,8 +97,10 @@ int SeaTalk::checkBus()
                 uint8_t u = (message[1] & 0xf0) >> 4;
                 uint8_t vw = message[2];
                 double courseOverGround = (u & 0x3) * 90 + (vw & 0x3F) * 2 + ((u & 0xC) >> 2) / 2;
-                snprintf(logbuf, LOGBUF_SIZE, "Course Over Ground: %.1f degrees", courseOverGround);
-                log::toAll(logbuf);
+                if (seatalkDebugRx) {
+                    snprintf(logbuf, LOGBUF_SIZE, "ST RX: Course Over Ground: %.1f degrees", courseOverGround);
+                    log::toAll(logbuf);
+                }
                 _signalManager->UpdateCourseOverGround(courseOverGround);
             }
             // Depth Below Transducer
@@ -94,8 +108,10 @@ int SeaTalk::checkBus()
             {
                 stRxPackets++;
                 double depthBelowTransducer = (((message[4] >> 8) | message[3]) / 10);
-                snprintf(logbuf, LOGBUF_SIZE, "Depth Below Transducer %.1f Meters", depthBelowTransducer);
-                log::toAll(logbuf);
+                if (seatalkDebugRx) {
+                    snprintf(logbuf, LOGBUF_SIZE, "ST RX: Depth Below Transducer %.1f Meters", depthBelowTransducer);
+                    log::toAll(logbuf);
+                }
             }
             // Auto Pilot Data
             else if (message[0] == 0x84 && message.size() == 9)
@@ -226,8 +242,10 @@ bool SeaTalk::send2ST(const uint8_t cmd[], int bytes)
     int attempt = 0;
     const int maxRetries = 5;
 
-    snprintf(logbuf, LOGBUF_SIZE, "ST TX: cmd=0x%02X len=%d", cmd[0], bytes);
-    log::toAll(logbuf);
+    if (seatalkDebugTx) {
+        snprintf(logbuf, LOGBUF_SIZE, "ST TX: cmd=0x%02X len=%d", cmd[0], bytes);
+        log::toAll(logbuf);
+    }
 
     while (attempt < maxRetries)
     {
@@ -257,8 +275,10 @@ bool SeaTalk::send2ST(const uint8_t cmd[], int bytes)
             // Clean send — no bus conflict detected
             digitalWrite(LED_PIN, LOW);
             stTxPackets++;
-            snprintf(logbuf, LOGBUF_SIZE, "ST TX OK: cmd=0x%02X after %d attempt(s)", cmd[0], attempt + 1);
-            log::toAll(logbuf);
+            if (seatalkDebugTx) {
+                snprintf(logbuf, LOGBUF_SIZE, "ST TX OK: cmd=0x%02X after %d attempt(s)", cmd[0], attempt + 1);
+                log::toAll(logbuf);
+            }
             delay(50);
             return true;
         }
@@ -266,16 +286,20 @@ bool SeaTalk::send2ST(const uint8_t cmd[], int bytes)
         // Stray bytes detected — possible collision
         attempt++;
         int backoff = random(50, 200);
-        snprintf(logbuf, LOGBUF_SIZE, "TX conflict: cmd=0x%02X stray=%d attempt=%d backoff=%dms",
-            cmd[0], strayBytes, attempt, backoff);
-        log::toAll(logbuf);
+        if (seatalkDebugTx) {
+            snprintf(logbuf, LOGBUF_SIZE, "TX conflict: cmd=0x%02X stray=%d attempt=%d backoff=%dms",
+                cmd[0], strayBytes, attempt, backoff);
+            log::toAll(logbuf);
+        }
         delay(backoff);
     }
 
     stTxFails++;
-    snprintf(logbuf, LOGBUF_SIZE, "Send Failed: cmd=0x%02X after %d attempts (total fails=%lu)",
-        cmd[0], maxRetries, stTxFails);
-    log::toAll(logbuf);
+    if (seatalkDebugTx) {
+        snprintf(logbuf, LOGBUF_SIZE, "Send Failed: cmd=0x%02X after %d attempts (total fails=%lu)",
+            cmd[0], maxRetries, stTxFails);
+        log::toAll(logbuf);
+    }
     digitalWrite(LED_PIN, LOW);
     return false;
 }
@@ -299,8 +323,7 @@ void SeaTalk::checkClearToWrite()
     }
 
     unsigned long waitTime = millis() - startWait;
-    if (bytesSkipped > 0 || waitTime > 20)
-    {
+    if ((bytesSkipped > 0 || waitTime > 20) && seatalkDebugTx) {
         snprintf(logbuf, LOGBUF_SIZE, "CTS: waited %lums, skipped %d bytes", waitTime, bytesSkipped);
         log::toAll(logbuf);
     }

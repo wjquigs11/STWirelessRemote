@@ -56,6 +56,15 @@ function SetOptions(data) {
         cb.checked = data.windtcp !== false && data.windtcp !== 0;
         updateWindTcpLabel(cb.checked);
     }
+    // SeaTalk debug toggles
+    var debugRxCb = document.getElementById("seatalkDebugRx");
+    if (debugRxCb) {
+        debugRxCb.checked = data.seatalkDebugRx === true || data.seatalkDebugRx === 1;
+    }
+    var debugTxCb = document.getElementById("seatalkDebugTx");
+    if (debugTxCb) {
+        debugTxCb.checked = data.seatalkDebugTx === true || data.seatalkDebugTx === 1;
+    }
 }
 
 function AddTimerOptions() {
