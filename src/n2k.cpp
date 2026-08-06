@@ -1,7 +1,7 @@
 #ifdef N2K
 /*
-  N2K CAN bus listener for STW-wjquigs.
-  Listen-only on ESP32 native CAN for Wind PGN 130306.
+  N2K CAN bus for STW-wjquigs.
+  Receives Wind PGN 130306 and optionally transmits Heading PGN 127250.
   Provides an alternate wind data source (in addition to TCP WindClient).
   When wind data arrives via N2K, it is fed to the SignalManager which
   updates SeaTalkData and sends to the SeaTalk bus.
@@ -16,11 +16,17 @@
 #define N2K_CAN_TX_PIN GPIO_NUM_26
 #define N2K_CAN_RX_PIN GPIO_NUM_27
 
+#define DEGTORAD 0.0174532925
+
 // ─── State ─────────────────────────────────────────────────────────────────────
 tNMEA2000 *n2kBus = nullptr;
 bool n2kDebug = false;
 bool n2kOpen = false;
 bool n2kWindActive = false;  // true once we receive at least one wind PGN
+
+// Heading transmit settings
+int headingOffset = 0;       // degrees to add to compass heading
+bool xmitHeading = false;    // transmit heading on N2K bus
 
 // Statistics
 unsigned long n2kMsgCount = 0;      // total messages received
@@ -112,18 +118,18 @@ static void HandleN2kMsg(const tN2kMsg &N2kMsg) {
 // ─── Public API ────────────────────────────────────────────────────────────────
 
 void n2kSetup() {
-  log::toAll("N2K: initializing CAN bus (listen-only)...");
+  log::toAll("N2K: initializing CAN bus...");
 
   n2kBus = new tNMEA2000_esp32(N2K_CAN_TX_PIN, N2K_CAN_RX_PIN);
 
   n2kBus->SetN2kCANReceiveFrameBufSize(150);
-  n2kBus->SetN2kCANSendFrameBufSize(10);
+  n2kBus->SetN2kCANSendFrameBufSize(50);
 
   // Product information
   n2kBus->SetProductInformation(
     "20250718",
     100,
-    "STW N2K Wind Listener",
+    "STW N2K Bridge",
     "1.0.0",
     "1.0.0"
   );
@@ -136,8 +142,8 @@ void n2kSetup() {
     2046       // manufacturer
   );
 
-  // Listen-only mode: we never transmit, only receive
-  n2kBus->SetMode(tNMEA2000::N2km_ListenOnly);
+  // ListenAndNode: receive all messages and can transmit
+  n2kBus->SetMode(tNMEA2000::N2km_ListenAndNode);
   n2kBus->EnableForward(false);
   n2kBus->SetMsgHandler(HandleN2kMsg);
   n2kBus->SetOnOpen(OnN2kOpen);
@@ -158,10 +164,12 @@ void n2kLoop() {
 }
 
 void n2kStatus() {
-  snprintf(logbuf, LOGBUF_SIZE, "N2K: open=%s active=%s debug=%s",
+  snprintf(logbuf, LOGBUF_SIZE, "N2K: open=%s active=%s debug=%s xmitHdg=%s offset=%d",
     n2kOpen ? "yes" : "no",
     n2kWindActive ? "yes" : "no",
-    n2kDebug ? "yes" : "no");
+    n2kDebug ? "yes" : "no",
+    xmitHeading ? "yes" : "no",
+    headingOffset);
   log::toAll(logbuf);
   snprintf(logbuf, LOGBUF_SIZE, "N2K: rx_msgs=%lu rx_wind=%lu tx_msgs=%lu tx_wind=%lu",
     n2kMsgCount, n2kWindCount, n2kMsgSentCount, n2kWindSentCount);
@@ -173,6 +181,31 @@ void n2kStatus() {
     snprintf(logbuf, LOGBUF_SIZE, "N2K: lastAWA=%.1f deg lastAWS=%.1f kts",
       n2kLastAWA, n2kLastAWS);
     log::toAll(logbuf);
+  }
+}
+
+void n2kSendHeading(double headingDeg) {
+  if (!n2kBus || !n2kOpen || !xmitHeading) return;
+
+  // Apply offset and normalize to 0-360
+  double adjusted = headingDeg + headingOffset;
+  while (adjusted < 0) adjusted += 360.0;
+  while (adjusted >= 360.0) adjusted -= 360.0;
+
+  tN2kMsg n2kMsg;
+  SetN2kPGN127250(n2kMsg, 255, adjusted * DEGTORAD, N2kDoubleNA, N2kDoubleNA, N2khr_magnetic);
+
+  if (n2kBus->SendMsg(n2kMsg)) {
+    n2kMsgSentCount++;
+    if (n2kDebug) {
+      snprintf(logbuf, LOGBUF_SIZE, "N2K TX: PGN127250 hdg=%.1f (raw=%.1f offset=%d)",
+        adjusted, headingDeg, headingOffset);
+      log::toAll(logbuf);
+    }
+  } else {
+    if (n2kDebug) {
+      log::toAll("N2K TX FAIL: PGN127250");
+    }
   }
 }
 

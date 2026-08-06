@@ -138,9 +138,12 @@ extern unsigned long n2kMsgSentCount;
 extern unsigned long n2kWindSentCount;
 extern double n2kLastAWA;
 extern double n2kLastAWS;
+extern int headingOffset;
+extern bool xmitHeading;
 void n2kSetup();
 void n2kLoop();
 void n2kStatus();
+void n2kSendHeading(double headingDeg);
 // JSON endpoint handler for web interface
 String getN2kStatusJson();
 #endif

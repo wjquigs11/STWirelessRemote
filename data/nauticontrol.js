@@ -65,6 +65,15 @@ function SetOptions(data) {
     if (debugTxCb) {
         debugTxCb.checked = data.seatalkDebugTx === true || data.seatalkDebugTx === 1;
     }
+    // N2K heading settings
+    var headingOffsetEl = document.getElementById("headingOffset");
+    if (headingOffsetEl) {
+        headingOffsetEl.value = data.headingOffset || 0;
+    }
+    var xmitHeadingCb = document.getElementById("xmitHeading");
+    if (xmitHeadingCb) {
+        xmitHeadingCb.checked = data.xmitHeading === true || data.xmitHeading === 1;
+    }
 }
 
 function AddTimerOptions() {

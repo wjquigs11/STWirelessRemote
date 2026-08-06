@@ -20,6 +20,8 @@ void Options::SaveWebOptions(WebOptions webOptions)
     _preferences.putString("windhost", webOptions.windhost);
     _preferences.putBool("seatalkDebugRx", webOptions.seatalkDebugRx);
     _preferences.putBool("seatalkDebugTx", webOptions.seatalkDebugTx);
+    _preferences.putInt("headingOffset", webOptions.headingOffset);
+    _preferences.putBool("xmitHeading", webOptions.xmitHeading);
 }
 
 WebOptions Options::GetWebOptions()
@@ -38,5 +40,7 @@ WebOptions Options::GetWebOptions()
     webOptions.windhost = _preferences.getString("windhost", WIND_SERVER_DEFAULT_HOST);
     webOptions.seatalkDebugRx = _preferences.getBool("seatalkDebugRx", true);
     webOptions.seatalkDebugTx = _preferences.getBool("seatalkDebugTx", false);
+    webOptions.headingOffset = _preferences.getInt("headingOffset", 0);
+    webOptions.xmitHeading = _preferences.getBool("xmitHeading", false);
     return webOptions;
 }

@@ -67,7 +67,9 @@ void startAppWebServer() {
     response->printf("\"windhost\": \"%s\", \n", webOptions.windhost.c_str());
     response->printf("\"windtcp\": %s, \n", (windClient && windClient->enabled) ? "true" : "false");
     response->printf("\"seatalkDebugRx\": %s, \n", webOptions.seatalkDebugRx ? "true" : "false");
-    response->printf("\"seatalkDebugTx\": %s \n", webOptions.seatalkDebugTx ? "true" : "false");
+    response->printf("\"seatalkDebugTx\": %s, \n", webOptions.seatalkDebugTx ? "true" : "false");
+    response->printf("\"headingOffset\": %d, \n", webOptions.headingOffset);
+    response->printf("\"xmitHeading\": %s \n", webOptions.xmitHeading ? "true" : "false");
     response->print("}");
     request->send(response);
   });
@@ -87,8 +89,16 @@ void startAppWebServer() {
     if (request->hasParam("windhost", true)) webOptions.windhost = request->getParam("windhost", true)->value();
     if (request->hasParam("seatalkDebugRx", true)) webOptions.seatalkDebugRx = request->getParam("seatalkDebugRx", true)->value() == "on";
     if (request->hasParam("seatalkDebugTx", true)) webOptions.seatalkDebugTx = request->getParam("seatalkDebugTx", true)->value() == "on";
+    if (request->hasParam("headingOffset", true)) webOptions.headingOffset = request->getParam("headingOffset", true)->value().toInt();
+    webOptions.xmitHeading = request->hasParam("xmitHeading", true);
     options->SaveWebOptions(webOptions);
     if (windClient) windClient->setServerHost(webOptions.windhost.c_str());
+#ifdef N2K
+    headingOffset = webOptions.headingOffset;
+    xmitHeading = webOptions.xmitHeading;
+#endif
+    seatalkDebugRx = webOptions.seatalkDebugRx;
+    seatalkDebugTx = webOptions.seatalkDebugTx;
     request->send(200);
   });
 

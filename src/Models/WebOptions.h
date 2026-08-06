@@ -20,6 +20,8 @@ struct WebOptions
     String windhost;
     bool seatalkDebugRx;   // debug for received messages (default true)
     bool seatalkDebugTx;  // debug for transmitted messages (default false)
+    int headingOffset;     // degrees to add to compass heading before N2K transmit
+    bool xmitHeading;      // transmit heading on N2K bus
 };
 
 #endif

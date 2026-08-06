@@ -150,6 +150,10 @@ void setup() {
   windClient = new WindClient(seatalk);
   windClient->setServerHost(webOpts.windhost.c_str());
   log::toAll("WindClient initialized");
+#ifdef N2K
+  headingOffset = webOpts.headingOffset;
+  xmitHeading = webOpts.xmitHeading;
+#endif
 #endif
 
 #ifdef N2K

@@ -1,6 +1,11 @@
 #include "SeaTalk.h"
 #include "logto.h"
 
+// Forward declaration for N2K heading transmit
+#ifdef N2K
+extern void n2kSendHeading(double headingDeg);
+#endif
+
 // Global packet counters
 unsigned long stRxPackets = 0;
 unsigned long stTxPackets = 0;
@@ -122,9 +127,16 @@ int SeaTalk::checkBus()
 
                 AutoPilotData pilotData;
                 pilotData.compassHeading = (u & 0x3) * 90 + (vw & 0x3F) * 2 + (u & 0xC ? (u & 0xC == 0xC ? 2 : 1) : 0);
-                snprintf(logbuf, LOGBUF_SIZE, "Auto Compass heading %.1f Degrees", pilotData.compassHeading);
-                log::toAll(logbuf);
+                if (seatalkDebugRx) {
+                    snprintf(logbuf, LOGBUF_SIZE, "ST RX: Auto Compass heading %.1f Degrees", pilotData.compassHeading);
+                    log::toAll(logbuf);
+                }
                 _signalManager->UpdateCompassHeading(pilotData.compassHeading);
+
+                // Transmit heading on N2K bus if enabled
+#ifdef N2K
+                n2kSendHeading(pilotData.compassHeading);
+#endif
 
                 uint8_t dir = (u & 0x80) >> 3;
                 if (dir == 1)
@@ -135,8 +147,10 @@ int SeaTalk::checkBus()
                 uint8_t v = (message[2] & 0xc0) >> 6;
                 uint8_t xy = message[3];
                 pilotData.autoPilotCourse = (v * 90) + (xy / 2);
-                snprintf(logbuf, LOGBUF_SIZE, "Auto Pilot Course= %.1f Degrees", pilotData.autoPilotCourse);
-                log::toAll(logbuf);
+                if (seatalkDebugRx) {
+                    snprintf(logbuf, LOGBUF_SIZE, "ST RX: Auto Pilot Course= %.1f Degrees", pilotData.autoPilotCourse);
+                    log::toAll(logbuf);
+                }
 
                 uint8_t z = message[4];
                 if (z & 0x2 == 0)
