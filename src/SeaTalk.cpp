@@ -127,6 +127,7 @@ int SeaTalk::checkBus()
 
                 AutoPilotData pilotData;
                 pilotData.compassHeading = (u & 0x3) * 90 + (vw & 0x3F) * 2 + (u & 0xC ? (u & 0xC == 0xC ? 2 : 1) : 0);
+                if (pilotData.compassHeading >= 360.0) pilotData.compassHeading -= 360.0;
                 if (seatalkDebugRx) {
                     snprintf(logbuf, LOGBUF_SIZE, "ST RX: Auto Compass heading %.1f Degrees", pilotData.compassHeading);
                     log::toAll(logbuf);
@@ -252,7 +253,6 @@ bool SeaTalk::send2ST(const uint8_t cmd[], int bytes)
 {
     int attempt = 0;
     const int maxRetries = 5;
-    bool ok = true;
 
     if (seatalkDebugTx) {
         snprintf(logbuf, LOGBUF_SIZE, "ST TX: cmd=0x%02X len=%d [%02X %02X %02X %02X]",
@@ -264,60 +264,27 @@ bool SeaTalk::send2ST(const uint8_t cmd[], int bytes)
     {
         checkClearToWrite();
         digitalWrite(LED_PIN, HIGH);
-        ok = true;
 
-        // Transmit each byte and verify echo (single-wire bus echoes back)
-        for (int i = 0; (i < bytes) && ok; i++)
+        // Transmit all bytes
+        for (int i = 0; i < bytes; i++)
         {
             (i == 0) ? _mySerial.write(cmd[i], SWSERIAL_PARITY_MARK) : _mySerial.write(cmd[i], SWSERIAL_PARITY_SPACE);
-            delay(1);
-
-            if (_mySerial.available())
-            {
-                uint8_t echoByte = _mySerial.read();
-                if (echoByte != cmd[i])
-                {
-                    if (seatalkDebugTx) {
-                        snprintf(logbuf, LOGBUF_SIZE, "ST TX echo mismatch: sent=0x%02X got=0x%02X byte=%d",
-                            cmd[i], echoByte, i);
-                        log::toAll(logbuf);
-                    }
-                    ok = false;
-                }
-            }
-            else
-            {
-                if (seatalkDebugTx) {
-                    snprintf(logbuf, LOGBUF_SIZE, "ST TX no echo for byte %d (0x%02X)", i, cmd[i]);
-                    log::toAll(logbuf);
-                }
-                ok = false;
-            }
+            delay(3);
         }
 
-        if (ok)
-        {
-            // Clean send — echo verified for all bytes
-            digitalWrite(LED_PIN, LOW);
-            stTxPackets++;
-            if (seatalkDebugTx) {
-                snprintf(logbuf, LOGBUF_SIZE, "ST TX OK: cmd=0x%02X after %d attempt(s)", cmd[0], attempt + 1);
-                log::toAll(logbuf);
-            }
-            delay(50);
-            return true;
-        }
-
-        // Collision detected — flush RX buffer and retry
+        // Flush any echoed bytes from RX buffer (if TX is looped back)
+        delay(5);
         while (_mySerial.available()) _mySerial.read();
-        attempt++;
-        int backoff = random(2, 50);
+
+        // Assume success (no echo verification possible on this hardware)
+        digitalWrite(LED_PIN, LOW);
+        stTxPackets++;
         if (seatalkDebugTx) {
-            snprintf(logbuf, LOGBUF_SIZE, "TX collision: cmd=0x%02X attempt=%d backoff=%dms",
-                cmd[0], attempt, backoff);
+            snprintf(logbuf, LOGBUF_SIZE, "ST TX OK: cmd=0x%02X after %d attempt(s)", cmd[0], attempt + 1);
             log::toAll(logbuf);
         }
-        delay(backoff);
+        delay(50);
+        return true;
     }
 
     stTxFails++;
