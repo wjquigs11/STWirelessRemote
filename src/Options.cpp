@@ -22,6 +22,7 @@ void Options::SaveWebOptions(WebOptions webOptions)
     _preferences.putBool("seatalkDebugTx", webOptions.seatalkDebugTx);
     _preferences.putInt("headingOffset", webOptions.headingOffset);
     _preferences.putBool("xmitHeading", webOptions.xmitHeading);
+    _preferences.putFloat("windXmitHz", webOptions.windXmitHz);
 }
 
 WebOptions Options::GetWebOptions()
@@ -42,5 +43,6 @@ WebOptions Options::GetWebOptions()
     webOptions.seatalkDebugTx = _preferences.getBool("seatalkDebugTx", false);
     webOptions.headingOffset = _preferences.getInt("headingOffset", 0);
     webOptions.xmitHeading = _preferences.getBool("xmitHeading", false);
+    webOptions.windXmitHz = _preferences.getFloat("windXmitHz", 1.0f);
     return webOptions;
 }

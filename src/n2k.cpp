@@ -28,6 +28,9 @@ bool n2kWindActive = false;  // true once we receive at least one wind PGN
 int headingOffset = 0;       // degrees to add to compass heading
 bool xmitHeading = false;    // transmit heading on N2K bus
 
+// Wind transmit throttle
+float windXmitHz = 1.0f;    // wind transmission rate on SeaTalk (Hz)
+
 // Statistics
 unsigned long n2kMsgCount = 0;      // total messages received
 unsigned long n2kWindCount = 0;     // wind messages received
@@ -96,11 +99,17 @@ static void HandleN2kMsg(const tN2kMsg &N2kMsg) {
           signalManager->UpdateApparentWindAngle(awaDeg);
           signalManager->UpdateApparentWindSpeed(awsKts);
         }
-        // Also send directly on SeaTalk bus
-        if (seatalk) {
-          seatalk->sendApparentWindAngle(awaDeg);
-          delay(50); // inter-message gap for bus settling
-          seatalk->sendApparentWindSpeed(awsKts);
+        // Throttle wind transmission on SeaTalk bus
+        {
+          static unsigned long lastN2kWindXmitTime = 0;
+          unsigned long nowMs = millis();
+          unsigned long intervalMs = (windXmitHz > 0) ? (unsigned long)(1000.0f / windXmitHz) : 1000;
+          if (seatalk && (nowMs - lastN2kWindXmitTime >= intervalMs)) {
+            lastN2kWindXmitTime = nowMs;
+            seatalk->sendApparentWindAngle(awaDeg);
+            delay(50);
+            seatalk->sendApparentWindSpeed(awsKts);
+          }
         }
 #else
         // No SeaTalk — values are stored in n2kLastAWA/n2kLastAWS for other consumers

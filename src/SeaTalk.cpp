@@ -185,29 +185,42 @@ void SeaTalk::sendCommand(commands cmd)
 {
     snprintf(logbuf, LOGBUF_SIZE, "%d", cmd);
     log::toAll(logbuf);
-    if (cmd == minus_1)
+    if (cmd == minus_1) {
         send2ST(ST_Minus_1, 4);
-    else if (cmd == plus_1)
+        delay(100);
+        send2ST(ST_Minus_1, 4);
+    } else if (cmd == plus_1) {
         send2ST(ST_Plus_1, 4);
-    else if (cmd == minus_10)
+        delay(100);
+        send2ST(ST_Plus_1, 4);
+    } else if (cmd == minus_10) {
         send2ST(ST_Minus_10, 4);
-    else if (cmd == plus_10)
+        delay(100);
+        send2ST(ST_Minus_10, 4);
+    } else if (cmd == plus_10) {
         send2ST(ST_Plus_10, 4);
-    else if (cmd == auto_but)
+        delay(100);
+        send2ST(ST_Plus_10, 4);
+    } else if (cmd == auto_but) {
         send2ST(ST_Auto, 4);
-    else if (cmd == standby_but)
+        delay(100);
+        send2ST(ST_Auto, 4);
+    } else if (cmd == standby_but) {
         send2ST(ST_Standby, 4);
-    else if (cmd == start_timer)
+        delay(100);
+        send2ST(ST_Standby, 4);
+    } else if (cmd == start_timer) {
         send2ST(ST_TimerStart, 5);
-    else if (cmd == wind_mode)
+        delay(100);
+        send2ST(ST_TimerStart, 5);
+    } else if (cmd == wind_mode) {
         send2ST(ST_Wind, 4);
-    else if (cmd == tack_port)
-    {
+        delay(100);
+        send2ST(ST_Wind, 4);
+    } else if (cmd == tack_port) {
         send2ST(ST_Minus_1, 4);
         send2ST(ST_Minus_10, 4);
-    }
-    else if (cmd == tack_starboard)
-    {
+    } else if (cmd == tack_starboard) {
         send2ST(ST_Plus_1, 4);
         send2ST(ST_Plus_10, 4);
     }

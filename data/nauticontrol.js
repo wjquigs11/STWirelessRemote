@@ -74,6 +74,11 @@ function SetOptions(data) {
     if (xmitHeadingCb) {
         xmitHeadingCb.checked = data.xmitHeading === true || data.xmitHeading === 1;
     }
+    // Wind xmit rate
+    var windXmitHzEl = document.getElementById("windXmitHz");
+    if (windXmitHzEl) {
+        windXmitHzEl.value = data.windXmitHz || 1;
+    }
 }
 
 function AddTimerOptions() {

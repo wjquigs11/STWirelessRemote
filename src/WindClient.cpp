@@ -3,6 +3,10 @@
 
 extern char logbuf[];
 extern bool wifiConnected;
+extern float windXmitHz;
+
+// Throttle for wind transmission on SeaTalk
+static unsigned long lastWindXmitTime = 0;
 
 WindClient::WindClient(SeaTalk *seaTalk)
 {
@@ -89,13 +93,8 @@ void WindClient::fetchReadings()
                     awa = doc["awa"].as<double>();
 
                 _lastAWA = awa;
-                _seaTalk->sendApparentWindAngle(awa);
                 gotWind = true;
             }
-
-            // Inter-message gap to let the bus settle between consecutive sends
-            if (gotWind)
-                delay(50);
 
             if (doc["aws"].is<const char*>() || doc["aws"].is<float>() || doc["aws"].is<double>())
             {
@@ -106,8 +105,17 @@ void WindClient::fetchReadings()
                     aws = doc["aws"].as<double>();
 
                 _lastAWS = aws;
-                _seaTalk->sendApparentWindSpeed(aws);
                 gotWind = true;
+            }
+
+            // Throttle wind transmission on SeaTalk bus
+            unsigned long now = millis();
+            unsigned long intervalMs = (windXmitHz > 0) ? (unsigned long)(1000.0f / windXmitHz) : 1000;
+            if (gotWind && (now - lastWindXmitTime >= intervalMs)) {
+                lastWindXmitTime = now;
+                _seaTalk->sendApparentWindAngle(_lastAWA);
+                delay(50);
+                _seaTalk->sendApparentWindSpeed(_lastAWS);
             }
 
             if (doc["stw"].is<const char*>() || doc["stw"].is<float>() || doc["stw"].is<double>())

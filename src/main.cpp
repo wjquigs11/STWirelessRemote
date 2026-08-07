@@ -153,6 +153,7 @@ void setup() {
 #ifdef N2K
   headingOffset = webOpts.headingOffset;
   xmitHeading = webOpts.xmitHeading;
+  windXmitHz = webOpts.windXmitHz;
 #endif
 #endif
 

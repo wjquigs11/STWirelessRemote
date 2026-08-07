@@ -140,6 +140,7 @@ extern double n2kLastAWA;
 extern double n2kLastAWS;
 extern int headingOffset;
 extern bool xmitHeading;
+extern float windXmitHz;
 void n2kSetup();
 void n2kLoop();
 void n2kStatus();
