@@ -254,7 +254,8 @@ bool SeaTalk::send2ST(const uint8_t cmd[], int bytes)
     const int maxRetries = 5;
 
     if (seatalkDebugTx) {
-        snprintf(logbuf, LOGBUF_SIZE, "ST TX: cmd=0x%02X len=%d", cmd[0], bytes);
+        snprintf(logbuf, LOGBUF_SIZE, "ST TX: cmd=0x%02X len=%d [%02X %02X %02X %02X]",
+            cmd[0], bytes, cmd[0], cmd[1], bytes > 2 ? cmd[2] : 0, bytes > 3 ? cmd[3] : 0);
         log::toAll(logbuf);
     }
 
