@@ -312,6 +312,15 @@ void onWiFiConnected() {
   snprintf(logbuf, LOGBUF_SIZE, "ESP IP Address: http://%s", WiFi.localIP().toString().c_str());
   log::toAll(logbuf);
   wifiConnected = true;
+
+  // Store the successfully connected SSID for next boot priority
+  String connectedSSID = WiFi.SSID();
+  if (connectedSSID.length() > 0) {
+    preferences.putString("lastSSID", connectedSSID);
+    snprintf(logbuf, LOGBUF_SIZE, "Stored lastSSID: %s", connectedSSID.c_str());
+    log::toAll(logbuf);
+  }
+
   if (connectTimer != NULL) {
     xTimerDelete(connectTimer, 0);
     connectTimer = NULL;
@@ -515,6 +524,33 @@ bool setupWifi() {
     return false;
   } else {
     log::toAll("starting wifi");
+
+    // Prioritize lastSSID from Preferences — move it to front of wifi[] array
+    String lastSSID = preferences.getString("lastSSID", "");
+    if (lastSSID.length() > 0) {
+      int foundIdx = -1;
+      for (int i = 0; i < wifiCount; i++) {
+        if (wifi[i].ssid == lastSSID) {
+          foundIdx = i;
+          break;
+        }
+      }
+      if (foundIdx > 0) {
+        // Swap to front so it's tried first
+        WiFiCredentials tmp = wifi[0];
+        wifi[0] = wifi[foundIdx];
+        wifi[foundIdx] = tmp;
+        snprintf(logbuf, LOGBUF_SIZE, "Prioritizing lastSSID: %s", lastSSID.c_str());
+        log::toAll(logbuf);
+      } else if (foundIdx == 0) {
+        snprintf(logbuf, LOGBUF_SIZE, "lastSSID already first: %s", lastSSID.c_str());
+        log::toAll(logbuf);
+      } else {
+        snprintf(logbuf, LOGBUF_SIZE, "lastSSID '%s' not in wifi.json, ignoring", lastSSID.c_str());
+        log::toAll(logbuf);
+      }
+    }
+
     WiFi.mode(WIFI_STA);
     wifiStartTime = now; // Set global wifiStartTime when WiFi connection starts    
     // set up tryConnect every 5 seconds

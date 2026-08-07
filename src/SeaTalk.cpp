@@ -252,6 +252,7 @@ bool SeaTalk::send2ST(const uint8_t cmd[], int bytes)
 {
     int attempt = 0;
     const int maxRetries = 5;
+    bool ok = true;
 
     if (seatalkDebugTx) {
         snprintf(logbuf, LOGBUF_SIZE, "ST TX: cmd=0x%02X len=%d [%02X %02X %02X %02X]",
@@ -263,28 +264,40 @@ bool SeaTalk::send2ST(const uint8_t cmd[], int bytes)
     {
         checkClearToWrite();
         digitalWrite(LED_PIN, HIGH);
+        ok = true;
 
-        // Transmit all bytes blind
-        for (int i = 0; i < bytes; i++)
+        // Transmit each byte and verify echo (single-wire bus echoes back)
+        for (int i = 0; (i < bytes) && ok; i++)
         {
             (i == 0) ? _mySerial.write(cmd[i], SWSERIAL_PARITY_MARK) : _mySerial.write(cmd[i], SWSERIAL_PARITY_SPACE);
             delay(1);
+
+            if (_mySerial.available())
+            {
+                uint8_t echoByte = _mySerial.read();
+                if (echoByte != cmd[i])
+                {
+                    if (seatalkDebugTx) {
+                        snprintf(logbuf, LOGBUF_SIZE, "ST TX echo mismatch: sent=0x%02X got=0x%02X byte=%d",
+                            cmd[i], echoByte, i);
+                        log::toAll(logbuf);
+                    }
+                    ok = false;
+                }
+            }
+            else
+            {
+                if (seatalkDebugTx) {
+                    snprintf(logbuf, LOGBUF_SIZE, "ST TX no echo for byte %d (0x%02X)", i, cmd[i]);
+                    log::toAll(logbuf);
+                }
+                ok = false;
+            }
         }
 
-        // Wait for bus to settle after our transmission
-        delay(3);
-
-        // Check if there's unexpected data on the bus (another device was talking)
-        int strayBytes = 0;
-        while (_mySerial.available())
+        if (ok)
         {
-            _mySerial.read();
-            strayBytes++;
-        }
-
-        if (strayBytes == 0)
-        {
-            // Clean send — no bus conflict detected
+            // Clean send — echo verified for all bytes
             digitalWrite(LED_PIN, LOW);
             stTxPackets++;
             if (seatalkDebugTx) {
@@ -295,12 +308,13 @@ bool SeaTalk::send2ST(const uint8_t cmd[], int bytes)
             return true;
         }
 
-        // Stray bytes detected — possible collision
+        // Collision detected — flush RX buffer and retry
+        while (_mySerial.available()) _mySerial.read();
         attempt++;
-        int backoff = random(50, 200);
+        int backoff = random(2, 50);
         if (seatalkDebugTx) {
-            snprintf(logbuf, LOGBUF_SIZE, "TX conflict: cmd=0x%02X stray=%d attempt=%d backoff=%dms",
-                cmd[0], strayBytes, attempt, backoff);
+            snprintf(logbuf, LOGBUF_SIZE, "TX collision: cmd=0x%02X attempt=%d backoff=%dms",
+                cmd[0], attempt, backoff);
             log::toAll(logbuf);
         }
         delay(backoff);
