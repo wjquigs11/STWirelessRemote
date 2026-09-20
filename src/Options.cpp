@@ -23,6 +23,8 @@ void Options::SaveWebOptions(WebOptions webOptions)
     _preferences.putInt("headingOffset", webOptions.headingOffset);
     _preferences.putBool("xmitHeading", webOptions.xmitHeading);
     _preferences.putFloat("windXmitHz", webOptions.windXmitHz);
+    _preferences.putInt("trollDeg", webOptions.trollDegreesPerTurn);
+    _preferences.putInt("trollMs", webOptions.trollTimePerDegreeMs);
 }
 
 WebOptions Options::GetWebOptions()
@@ -44,5 +46,7 @@ WebOptions Options::GetWebOptions()
     webOptions.headingOffset = _preferences.getInt("headingOffset", 0);
     webOptions.xmitHeading = _preferences.getBool("xmitHeading", false);
     webOptions.windXmitHz = _preferences.getFloat("windXmitHz", 1.0f);
+    webOptions.trollDegreesPerTurn = _preferences.getInt("trollDeg", 10);
+    webOptions.trollTimePerDegreeMs = _preferences.getInt("trollMs", 1000);
     return webOptions;
 }

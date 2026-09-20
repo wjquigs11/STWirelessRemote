@@ -145,6 +145,8 @@ void setup() {
   WebOptions webOpts = options->GetWebOptions();
   seatalkDebugRx = webOpts.seatalkDebugRx;
   seatalkDebugTx = webOpts.seatalkDebugTx;
+  trollDegreesPerTurn = webOpts.trollDegreesPerTurn;
+  trollTimePerDegreeMs = webOpts.trollTimePerDegreeMs;
   log::toAll("SeaTalk initialized");
 
   // Initialize WindClient (connects to Garmin-N2K-Mast-Rotation ESP32)

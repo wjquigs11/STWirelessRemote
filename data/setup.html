@@ -94,6 +94,16 @@
           <span>Transmit compass heading on N2K bus</span>
         </div>
 
+        <h2>Troll Mode</h2>
+        <div>
+          <label for="trollDegreesPerTurn">Degrees per Turn:</label>
+          <input type="number" id="trollDegreesPerTurn" name="trollDegreesPerTurn" value="10" min="1" max="90" step="1">
+        </div>
+        <div>
+          <label for="trollTimePerDegree">Time per Degree (seconds):</label>
+          <input type="number" id="trollTimePerDegree" name="trollTimePerDegree" value="1" min="0.1" max="30" step="0.1">
+        </div>
+
         <input type="submit" value="Save Settings">
       </form>
     </div>

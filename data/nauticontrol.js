@@ -79,6 +79,15 @@ function SetOptions(data) {
     if (windXmitHzEl) {
         windXmitHzEl.value = data.windXmitHz || 1;
     }
+    // Troll mode settings
+    var trollDegEl = document.getElementById("trollDegreesPerTurn");
+    if (trollDegEl) {
+        trollDegEl.value = data.trollDegreesPerTurn || 10;
+    }
+    var trollTimeEl = document.getElementById("trollTimePerDegree");
+    if (trollTimeEl) {
+        trollTimeEl.value = data.trollTimePerDegree || 1;
+    }
 }
 
 function AddTimerOptions() {

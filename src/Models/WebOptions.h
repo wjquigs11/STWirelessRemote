@@ -23,6 +23,8 @@ struct WebOptions
     int headingOffset;     // degrees to add to compass heading before N2K transmit
     bool xmitHeading;      // transmit heading on N2K bus
     float windXmitHz;      // wind transmission rate on SeaTalk (Hz), default 1.0
+    int trollDegreesPerTurn;   // troll mode: degrees to turn each direction, default 10
+    int trollTimePerDegreeMs;  // troll mode: ms per degree, default 1000
 };
 
 #endif

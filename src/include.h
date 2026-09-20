@@ -153,6 +153,9 @@ String getN2kStatusJson();
 #ifdef SEATALK
 extern bool seatalkDebugRx;   // debug for received messages (default true)
 extern bool seatalkDebugTx;  // debug for transmitted messages (default false)
+extern bool trollMode;
+extern int trollDegreesPerTurn;
+extern int trollTimePerDegreeMs;
 #include "SeaTalk.h"
 #include "RemoteControl.h"
 #include "Options.h"

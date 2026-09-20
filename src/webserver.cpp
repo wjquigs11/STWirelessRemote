@@ -70,7 +70,9 @@ void startAppWebServer() {
     response->printf("\"seatalkDebugTx\": %s, \n", webOptions.seatalkDebugTx ? "true" : "false");
     response->printf("\"headingOffset\": %d, \n", webOptions.headingOffset);
     response->printf("\"xmitHeading\": %s, \n", webOptions.xmitHeading ? "true" : "false");
-    response->printf("\"windXmitHz\": %.1f \n", webOptions.windXmitHz);
+    response->printf("\"windXmitHz\": %.1f, \n", webOptions.windXmitHz);
+    response->printf("\"trollDegreesPerTurn\": %d, \n", webOptions.trollDegreesPerTurn);
+    response->printf("\"trollTimePerDegree\": %.1f \n", webOptions.trollTimePerDegreeMs / 1000.0);
     response->print("}");
     request->send(response);
   });
@@ -93,6 +95,8 @@ void startAppWebServer() {
     if (request->hasParam("headingOffset", true)) webOptions.headingOffset = request->getParam("headingOffset", true)->value().toInt();
     webOptions.xmitHeading = request->hasParam("xmitHeading", true);
     if (request->hasParam("windXmitHz", true)) webOptions.windXmitHz = request->getParam("windXmitHz", true)->value().toFloat();
+    if (request->hasParam("trollDegreesPerTurn", true)) webOptions.trollDegreesPerTurn = request->getParam("trollDegreesPerTurn", true)->value().toInt();
+    if (request->hasParam("trollTimePerDegree", true)) webOptions.trollTimePerDegreeMs = (int)(request->getParam("trollTimePerDegree", true)->value().toFloat() * 1000);
     options->SaveWebOptions(webOptions);
     if (windClient) windClient->setServerHost(webOptions.windhost.c_str());
 #ifdef N2K
@@ -102,6 +106,8 @@ void startAppWebServer() {
 #endif
     seatalkDebugRx = webOptions.seatalkDebugRx;
     seatalkDebugTx = webOptions.seatalkDebugTx;
+    trollDegreesPerTurn = webOptions.trollDegreesPerTurn;
+    trollTimePerDegreeMs = webOptions.trollTimePerDegreeMs;
     request->send(200);
   });
 
@@ -181,18 +187,19 @@ void processWebCommands() {
 //   5. Wait 5 seconds, then repeat
 bool trollMode = false;
 
+// Troll mode tunable parameters (settable via setup.html)
+int trollDegreesPerTurn = 10;   // number of +1 / -1 nudges per direction
+int trollTimePerDegreeMs = 1000; // ms between each 1-degree nudge (default 1s)
+
 #ifdef SEATALK
 // State machine phases
 enum TrollPhase {
   TROLL_INIT,       // send auto, then begin
-  TROLL_PLUS,       // sending +1 x5
+  TROLL_PLUS,       // sending +1
   TROLL_WAIT_AFTER_PLUS,
-  TROLL_MINUS,      // sending -1 x5
+  TROLL_MINUS,      // sending -1
   TROLL_WAIT_AFTER_MINUS
 };
-
-#define TROLL_STEP_MS    5000  // 5 seconds between steps
-#define TROLL_STEP_COUNT 5     // number of +1 / -1 nudges per direction
 
 static TrollPhase trollPhase = TROLL_INIT;
 static unsigned long trollLastStep = 0;
@@ -234,13 +241,13 @@ void trollModeLoop() {
       break;
 
     case TROLL_PLUS:
-      if (now_ms - trollLastStep >= TROLL_STEP_MS) {
+      if (now_ms - trollLastStep >= (unsigned long)trollTimePerDegreeMs) {
         trollLastStep = now_ms;
         commandStack.push(plus_1);
         trollStepCount++;
-        snprintf(logbuf, LOGBUF_SIZE, "Troll: +1 (%d/%d)", trollStepCount, TROLL_STEP_COUNT);
+        snprintf(logbuf, LOGBUF_SIZE, "Troll: +1 (%d/%d)", trollStepCount, trollDegreesPerTurn);
         log::toAll(logbuf);
-        if (trollStepCount >= TROLL_STEP_COUNT) {
+        if (trollStepCount >= trollDegreesPerTurn) {
           trollPhase = TROLL_WAIT_AFTER_PLUS;
           trollLastStep = now_ms;
         }
@@ -248,7 +255,7 @@ void trollModeLoop() {
       break;
 
     case TROLL_WAIT_AFTER_PLUS:
-      if (now_ms - trollLastStep >= TROLL_STEP_MS) {
+      if (now_ms - trollLastStep >= (unsigned long)trollTimePerDegreeMs) {
         log::toAll("Troll: starting -1 sequence");
         trollPhase = TROLL_MINUS;
         trollStepCount = 0;
@@ -257,13 +264,13 @@ void trollModeLoop() {
       break;
 
     case TROLL_MINUS:
-      if (now_ms - trollLastStep >= TROLL_STEP_MS) {
+      if (now_ms - trollLastStep >= (unsigned long)trollTimePerDegreeMs) {
         trollLastStep = now_ms;
         commandStack.push(minus_1);
         trollStepCount++;
-        snprintf(logbuf, LOGBUF_SIZE, "Troll: -1 (%d/%d)", trollStepCount, TROLL_STEP_COUNT);
+        snprintf(logbuf, LOGBUF_SIZE, "Troll: -1 (%d/%d)", trollStepCount, trollDegreesPerTurn);
         log::toAll(logbuf);
-        if (trollStepCount >= TROLL_STEP_COUNT) {
+        if (trollStepCount >= trollDegreesPerTurn) {
           trollPhase = TROLL_WAIT_AFTER_MINUS;
           trollLastStep = now_ms;
         }
@@ -271,7 +278,7 @@ void trollModeLoop() {
       break;
 
     case TROLL_WAIT_AFTER_MINUS:
-      if (now_ms - trollLastStep >= TROLL_STEP_MS) {
+      if (now_ms - trollLastStep >= (unsigned long)trollTimePerDegreeMs) {
         log::toAll("Troll: cycle complete, repeating");
         trollPhase = TROLL_PLUS;  // loop back (auto already engaged)
         trollStepCount = 0;
