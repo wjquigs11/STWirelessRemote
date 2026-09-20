@@ -120,6 +120,18 @@ void startAppWebServer() {
       request->send(200, "text/plain", (windClient && windClient->enabled) ? "enabled" : "disabled");
     }
   });
+
+  // Troll mode toggle endpoint
+  server.on("/trollmode", HTTP_GET, [](AsyncWebServerRequest *request) {
+    extern bool trollMode;
+    if (request->hasParam("enabled")) {
+      trollMode = request->getParam("enabled")->value() == "1";
+      snprintf(logbuf, LOGBUF_SIZE, "Troll mode: %s (via web)", trollMode ? "on" : "off");
+      log::toAll(logbuf);
+    }
+    // No param: just return current state (no toggle)
+    request->send(200, "text/plain", trollMode ? "on" : "off");
+  });
 #endif
 }
 
@@ -158,6 +170,119 @@ void processWebCommands() {
   }
 #endif
 }
+
+// ─── Troll mode ─────────────────────────────────────────────────────────────
+// Slowly oscillates the boat course to keep it moving while generally holding
+// the same heading. Sequence:
+//   1. Send "auto" once to ensure autopilot is in auto mode
+//   2. Send +1 once every 5 seconds, 5 times
+//   3. Wait 5 seconds
+//   4. Send -1 once every 5 seconds, 5 times
+//   5. Wait 5 seconds, then repeat
+bool trollMode = false;
+
+#ifdef SEATALK
+// State machine phases
+enum TrollPhase {
+  TROLL_INIT,       // send auto, then begin
+  TROLL_PLUS,       // sending +1 x5
+  TROLL_WAIT_AFTER_PLUS,
+  TROLL_MINUS,      // sending -1 x5
+  TROLL_WAIT_AFTER_MINUS
+};
+
+#define TROLL_STEP_MS    5000  // 5 seconds between steps
+#define TROLL_STEP_COUNT 5     // number of +1 / -1 nudges per direction
+
+static TrollPhase trollPhase = TROLL_INIT;
+static unsigned long trollLastStep = 0;
+static int trollStepCount = 0;
+
+void trollModeLoop() {
+  static bool wasActive = false;
+
+  if (!trollMode) {
+    if (wasActive) {
+      // Just turned off — reset state for next run
+      trollPhase = TROLL_INIT;
+      trollStepCount = 0;
+      wasActive = false;
+      log::toAll("Troll mode: OFF");
+    }
+    return;
+  }
+
+  if (!wasActive) {
+    // Just turned on
+    wasActive = true;
+    trollPhase = TROLL_INIT;
+    trollStepCount = 0;
+    trollLastStep = 0;  // force immediate first action
+    log::toAll("Troll mode: ON");
+  }
+
+  unsigned long now_ms = millis();
+
+  switch (trollPhase) {
+    case TROLL_INIT:
+      // Ensure autopilot is in auto mode
+      commandStack.push(auto_but);
+      log::toAll("Troll: auto engaged, starting +1 sequence");
+      trollPhase = TROLL_PLUS;
+      trollStepCount = 0;
+      trollLastStep = now_ms;
+      break;
+
+    case TROLL_PLUS:
+      if (now_ms - trollLastStep >= TROLL_STEP_MS) {
+        trollLastStep = now_ms;
+        commandStack.push(plus_1);
+        trollStepCount++;
+        snprintf(logbuf, LOGBUF_SIZE, "Troll: +1 (%d/%d)", trollStepCount, TROLL_STEP_COUNT);
+        log::toAll(logbuf);
+        if (trollStepCount >= TROLL_STEP_COUNT) {
+          trollPhase = TROLL_WAIT_AFTER_PLUS;
+          trollLastStep = now_ms;
+        }
+      }
+      break;
+
+    case TROLL_WAIT_AFTER_PLUS:
+      if (now_ms - trollLastStep >= TROLL_STEP_MS) {
+        log::toAll("Troll: starting -1 sequence");
+        trollPhase = TROLL_MINUS;
+        trollStepCount = 0;
+        trollLastStep = now_ms;
+      }
+      break;
+
+    case TROLL_MINUS:
+      if (now_ms - trollLastStep >= TROLL_STEP_MS) {
+        trollLastStep = now_ms;
+        commandStack.push(minus_1);
+        trollStepCount++;
+        snprintf(logbuf, LOGBUF_SIZE, "Troll: -1 (%d/%d)", trollStepCount, TROLL_STEP_COUNT);
+        log::toAll(logbuf);
+        if (trollStepCount >= TROLL_STEP_COUNT) {
+          trollPhase = TROLL_WAIT_AFTER_MINUS;
+          trollLastStep = now_ms;
+        }
+      }
+      break;
+
+    case TROLL_WAIT_AFTER_MINUS:
+      if (now_ms - trollLastStep >= TROLL_STEP_MS) {
+        log::toAll("Troll: cycle complete, repeating");
+        trollPhase = TROLL_PLUS;  // loop back (auto already engaged)
+        trollStepCount = 0;
+        trollLastStep = now_ms;
+      }
+      break;
+  }
+}
+#else
+void trollModeLoop() {}
+#endif
 
 // ─── N2K Status JSON endpoint ──────────────────────────────────────────────────
 

@@ -82,6 +82,7 @@ unsigned long startTime;
 
 // Forward declaration for web command processing
 extern void processWebCommands();
+extern void trollModeLoop();
 
 void setup() {
   Serial.begin(115200);
@@ -279,6 +280,8 @@ void loop() {
       seatalk->processMessages();
       // Process RF remote control
       remoteControl->processRemote();
+      // Run troll mode state machine (pushes commands onto stack)
+      trollModeLoop();
       // Process web commands on main thread
       processWebCommands();
       // Process wind client (SSE from Garmin-N2K-Mast-Rotation)

@@ -45,6 +45,10 @@
     <button onclick="SendControl('tackstarboard');">Tack Stbd</button>
   </div>
 
+  <div class="button-row">
+    <button id="troll-btn" class="troll-off" onclick="toggleTroll();">Troll Mode: OFF</button>
+  </div>
+
   <div class="card-grid">
     <div class="card">
       <div class="card-title">Compass Heading</div>
@@ -128,6 +132,37 @@
 
     setInterval(fetchN2kStatus, 5000);
     fetchN2kStatus(); // initial fetch
+
+    // Troll mode toggle
+    function updateTrollButton(on) {
+      var btn = document.getElementById('troll-btn');
+      if (!btn) return;
+      if (on) {
+        btn.className = 'troll-on';
+        btn.textContent = 'Troll Mode: ON';
+      } else {
+        btn.className = 'troll-off';
+        btn.textContent = 'Troll Mode: OFF';
+      }
+    }
+
+    function toggleTroll() {
+      var btn = document.getElementById('troll-btn');
+      var currentlyOn = btn && btn.className === 'troll-on';
+      var newState = currentlyOn ? '0' : '1';
+      fetch('/trollmode?enabled=' + newState)
+        .then(response => response.text())
+        .then(data => {
+          updateTrollButton(data.trim() === 'on');
+        })
+        .catch(err => console.error('Error toggling troll mode:', err));
+    }
+
+    // Fetch initial troll state
+    fetch('/trollmode')
+      .then(response => response.text())
+      .then(data => updateTrollButton(data.trim() === 'on'))
+      .catch(err => console.error('Error fetching troll state:', err));
   </script>
 </body>
 </html>

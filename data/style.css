@@ -126,6 +126,23 @@ button:active {
   max-width: 200px;
 }
 
+/* ── Troll mode toggle ── */
+button.troll-off {
+  background-color: #F44336;
+}
+
+button.troll-off:hover {
+  background-color: #d32f2f;
+}
+
+button.troll-on {
+  background-color: #4CAF50;
+}
+
+button.troll-on:hover {
+  background-color: #43A047;
+}
+
 /* ── Status lamp ── */
 .status-lamp {
   text-align: center;
