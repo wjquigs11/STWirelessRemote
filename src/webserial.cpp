@@ -21,9 +21,10 @@ void myAppHandler(String* words, int totalWords) {
       else if (words[1] == "-10") { seatalk->sendCommand(minus_10); log::toAll("ST: -10"); }
       else if (words[1] == "wind") { seatalk->sendCommand(wind_mode); log::toAll("ST: wind"); }
       else if (words[1] == "timer") { seatalk->sendCommand(start_timer); log::toAll("ST: timer"); }
-      else log::toAll("st {auto|standby|+1|-1|+10|-10|wind|timer}");
+      else if (words[1] == "probe") { seatalk->optoProbe(); }
+      else log::toAll("st {auto|standby|+1|-1|+10|-10|wind|timer|probe}");
     } else {
-      log::toAll("st {auto|standby|+1|-1|+10|-10|wind|timer}");
+      log::toAll("st {auto|standby|+1|-1|+10|-10|wind|timer|probe}");
     }
     return;
   }

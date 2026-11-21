@@ -128,6 +128,34 @@ void SeaTalk::optoLogLoop()
     log::toAll(logbuf);
 }
 
+/// @brief Sample raw RX_IN level over a window and report idle level + activity.
+/// RX_IN/GPIO35 taps the J1.2 DATA node through the R_in/opto RX leg; this is
+/// the only software view of DATA. At idle (bus at 12V) the inverted opto path
+/// should hold GPIO35 steady; any low pulse means DATA activity reached RX.
+/// Zero lows here while TX is driving means the RX leg (R_in/ISO_IN/opto) or
+/// the DATA node itself is not working, NOT just a silent bus.
+void SeaTalk::optoProbe(unsigned long durationMs)
+{
+    // Temporarily take over the RX pin for a raw read. SoftwareSerial keeps it
+    // as an input, so sampling with digitalRead is non-destructive.
+    unsigned long start = millis();
+    unsigned long samples = 0, rxHigh = 0, rxLow = 0;
+    int rxMin = 1, rxMax = 0;
+    while (millis() - start < durationMs) {
+        int v = digitalRead(RX_IN);
+        if (v) { rxHigh++; if (v > rxMax) rxMax = v; }
+        else   { rxLow++;  rxMin = 0; }
+        samples++;
+    }
+    int txLevel = digitalRead(TX_OUT);
+    snprintf(logbuf, LOGBUF_SIZE,
+             "ST opto probe (%lums): RX_IN(GPIO%d) idle=%s high=%lu low=%lu of %lu; TX_OUT(GPIO%d) now=%d",
+             durationMs, RX_IN,
+             (rxLow == 0) ? "HIGH(steady)" : (rxHigh == 0) ? "LOW(stuck!)" : "toggling",
+             rxHigh, rxLow, samples, TX_OUT, txLevel);
+    log::toAll(logbuf);
+}
+
 /// @brief Method to run messages
 void SeaTalk::processMessages()
 {

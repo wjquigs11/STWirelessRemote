@@ -55,6 +55,10 @@ public:
                         unsigned long &intervalMs);
     // Drain and emit pending per-change log lines; call from loop().
     void optoLogLoop();
+    // Diagnostic: sample the raw RX_IN (and TX_OUT) pin levels over a short
+    // window and log idle level + min/max seen. Helps tell a dead RX leg from
+    // a genuinely silent bus. Blocks ~durationMs; call from main thread only.
+    void optoProbe(unsigned long durationMs = 300);
 
 private:
     SoftwareSerial _mySerial;
