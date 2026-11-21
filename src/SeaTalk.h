@@ -2,7 +2,11 @@
 #define SEATALK_H
 #define BEEP_DURATION 150
 #define MAX_BUF_SIZE 20
-#define RX_IN 32
+// SH-ESP32 pin mapping (Rev. 2.1.0; opto pads silkscreened ISO_OUT/ISO_IN/V_ISO/ISO_GND):
+//   RX_IN  = GPIO35 -> on-board isolated opto INPUT  (OPTO_IN / "ISO_IN" pad). Input-only pin.
+//   TX_OUT = GPIO33 -> on-board isolated opto OUTPUT (OPTO_OUT / "ISO_OUT" pad).
+//   LED_PIN= GPIO2  -> on-board blue LED.
+#define RX_IN 35
 #define TX_OUT 33
 #define LED_PIN 2
 #define METRES_TO_FEET 3.28084
