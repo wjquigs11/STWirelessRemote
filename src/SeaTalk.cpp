@@ -22,6 +22,110 @@ SeaTalk::SeaTalk(SignalManager *signalManager)
     _mySerial.begin(4800, SWSERIAL_8S1, RX_IN, TX_OUT, true, 95);
     pinMode(LED_PIN, OUTPUT);
     _signalManager = signalManager;
+    logOptoPins();
+}
+
+/// @brief Log the SeaTalk opto GPIO assignments and their current digital states.
+///        RX_IN (opto input) and TX_OUT (opto output) are driven by SoftwareSerial;
+///        digitalRead() gives a snapshot of the current line level (SeaTalk idles high).
+void SeaTalk::logOptoPins()
+{
+    int rxVal = digitalRead(RX_IN);
+    int txVal = digitalRead(TX_OUT);
+    snprintf(logbuf, LOGBUF_SIZE,
+             "ST GPIO: opto RX_IN=GPIO%d val=%d, opto TX_OUT=GPIO%d val=%d, LED_PIN=GPIO%d",
+             RX_IN, rxVal, TX_OUT, txVal, LED_PIN);
+    log::toAll(logbuf);
+}
+
+// ── Opto GPIO state-change monitoring ──────────────────────────────────────
+// Edge counters updated from GPIO interrupts. volatile: shared with ISRs.
+static volatile unsigned long optoRxEdges = 0;
+static volatile unsigned long optoTxEdges = 0;
+// Running totals since counters were last read by getOptoChanges().
+static volatile unsigned long optoRxEdgesLast = 0;
+static volatile unsigned long optoTxEdgesLast = 0;
+static unsigned long optoLastReadMs = 0;
+static bool optoLogEnabled = false;
+static bool optoIsrAttached = false;
+
+static void IRAM_ATTR optoRxIsr() { optoRxEdges++; }
+static void IRAM_ATTR optoTxIsr() { optoTxEdges++; }
+
+/// @brief Enable/disable opto edge monitoring and per-change logging.
+/// Attaches CHANGE interrupts on both opto pins on first enable.
+void SeaTalk::setOptoLog(bool on)
+{
+    if (on && !optoIsrAttached) {
+        // Snapshot current totals as the baseline so the first web query
+        // reports changes since enabling.
+        optoRxEdges = optoTxEdges = 0;
+        optoRxEdgesLast = optoTxEdgesLast = 0;
+        optoLastReadMs = millis();
+        attachInterrupt(digitalPinToInterrupt(RX_IN), optoRxIsr, CHANGE);
+        attachInterrupt(digitalPinToInterrupt(TX_OUT), optoTxIsr, CHANGE);
+        optoIsrAttached = true;
+    } else if (!on && optoIsrAttached) {
+        detachInterrupt(digitalPinToInterrupt(RX_IN));
+        detachInterrupt(digitalPinToInterrupt(TX_OUT));
+        optoIsrAttached = false;
+    }
+    optoLogEnabled = on;
+    snprintf(logbuf, LOGBUF_SIZE, "ST opto monitor: %s", on ? "ON" : "OFF");
+    log::toAll(logbuf);
+}
+
+bool SeaTalk::getOptoLog() const
+{
+    return optoLogEnabled;
+}
+
+/// @brief Return edge counts since the previous call, then reset the window.
+void SeaTalk::getOptoChanges(unsigned long &rxChanges, unsigned long &txChanges,
+                             unsigned long &intervalMs)
+{
+    noInterrupts();
+    unsigned long rxNow = optoRxEdges;
+    unsigned long txNow = optoTxEdges;
+    interrupts();
+
+    rxChanges = rxNow - optoRxEdgesLast;
+    txChanges = txNow - optoTxEdgesLast;
+    optoRxEdgesLast = rxNow;
+    optoTxEdgesLast = txNow;
+
+    unsigned long nowMs = millis();
+    intervalMs = nowMs - optoLastReadMs;
+    optoLastReadMs = nowMs;
+}
+
+/// @brief Log accumulated opto edge counts once per second and reset counters.
+/// Logging every single edge would flood the system at 4800 baud, so this
+/// emits a one-line summary at most once per second while monitoring is on,
+/// then zeroes the counters so each line reports changes in the last second.
+void SeaTalk::optoLogLoop()
+{
+    if (!optoLogEnabled) return;
+
+    static unsigned long lastLogMs = 0;
+    unsigned long nowMs = millis();
+    if (nowMs - lastLogMs < 1000) return;
+    lastLogMs = nowMs;
+
+    noInterrupts();
+    unsigned long rxCount = optoRxEdges;
+    unsigned long txCount = optoTxEdges;
+    optoRxEdges = 0;
+    optoTxEdges = 0;
+    interrupts();
+    // Keep the web query's baseline consistent after this reset.
+    optoRxEdgesLast = 0;
+    optoTxEdgesLast = 0;
+
+    snprintf(logbuf, LOGBUF_SIZE,
+             "ST opto edges/s: RX_IN(GPIO%d)=%lu TX_OUT(GPIO%d)=%lu",
+             RX_IN, rxCount, TX_OUT, txCount);
+    log::toAll(logbuf);
 }
 
 /// @brief Method to run messages

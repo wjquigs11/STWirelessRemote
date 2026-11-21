@@ -138,6 +138,30 @@ void startAppWebServer() {
     // No param: just return current state (no toggle)
     request->send(200, "text/plain", trollMode ? "on" : "off");
   });
+
+  // Opto GPIO state-change monitor toggle + report.
+  //   /optolog?enabled=1  -> turn monitoring on
+  //   /optolog?enabled=0  -> turn monitoring off
+  //   /optolog            -> report edge counts since last invocation
+  // Reports state changes on each opto GPIO since the previous call, which
+  // indicates activity (traffic) on the SeaTalk bus.
+  server.on("/optolog", HTTP_GET, [](AsyncWebServerRequest *request) {
+    if (!seatalk) {
+      request->send(503, "text/plain", "seatalk not initialized");
+      return;
+    }
+    if (request->hasParam("enabled")) {
+      bool en = request->getParam("enabled")->value() == "1";
+      seatalk->setOptoLog(en);
+    }
+    unsigned long rxChanges = 0, txChanges = 0, intervalMs = 0;
+    seatalk->getOptoChanges(rxChanges, txChanges, intervalMs);
+    char buf[160];
+    snprintf(buf, sizeof(buf),
+             "opto monitor %s; changes since last call (%lu ms): RX_IN(GPIO35)=%lu TX_OUT(GPIO33)=%lu",
+             seatalk->getOptoLog() ? "on" : "off", intervalMs, rxChanges, txChanges);
+    request->send(200, "text/plain", buf);
+  });
 #endif
 }
 

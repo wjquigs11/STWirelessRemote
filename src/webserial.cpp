@@ -372,12 +372,18 @@ static void handleCommand(String dataS) {
         log::toAll(logbuf);
         return;
       }
+#ifdef SEATALK
+      if (words[1] == "optolog") {
+        if (seatalk) seatalk->setOptoLog(!seatalk->getOptoLog());
+        return;
+      }
+#endif
       if (togHandler) {
         togHandler(&words[1], wordCount - 1);
         return;
       }
     }
-    log::toAll("toggle {debug|log}");
+    log::toAll("toggle {debug|log|optolog}");
     return;
   }
 

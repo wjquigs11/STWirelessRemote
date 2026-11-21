@@ -280,6 +280,8 @@ void loop() {
 #ifdef SEATALK
       // Process SeaTalk bus messages
       seatalk->processMessages();
+      // Emit periodic opto GPIO edge-count summary (if monitoring enabled)
+      seatalk->optoLogLoop();
       // Process RF remote control
       remoteControl->processRemote();
       // Run troll mode state machine (pushes commands onto stack)
