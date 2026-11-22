@@ -1,0 +1,183 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1000" height="700" viewBox="0 0 1000 700" font-family="Helvetica,Arial,sans-serif">
+  <style>
+    .wire{stroke:#111;stroke-width:2;fill:none}
+    .node{fill:#111}
+    .lbl{font-size:14px;fill:#111}
+    .sub{font-size:12px;fill:#444}
+    .pin{font-size:13px;fill:#005a9c;font-weight:bold}
+    .pnum{font-size:11px;fill:#005a9c}
+    .box{fill:#f4f4f4;stroke:#111;stroke-width:2}
+    .tri{fill:#fff;stroke:#111;stroke-width:2}
+    .title{font-size:18px;fill:#111;font-weight:bold}
+    .rail12{fill:#b00}
+    .rail5{fill:#a60}
+    .rail33{fill:#606}
+    .railg{fill:#060}
+  </style>
+  <defs>
+    <!-- local ground symbol, origin at top of the symbol -->
+    <g id="gnd" class="wire">
+      <line x1="-10" y1="0" x2="10" y2="0"/>
+      <line x1="-6" y1="5" x2="6" y2="5"/>
+      <line x1="-2" y1="10" x2="2" y2="10"/>
+    </g>
+  </defs>
+
+  <text class="title" x="20" y="28">SeaTalk &#8596; SH-ESP32 via SN74LS07N (replaces the opto-block interface)</text>
+  <text class="sub" x="20" y="48">Based on AK-Homberger Seatalk-Autopilot-Remote-Control (U2A = TX, U2B = RX). 74LS07 runs on 5 V; ESP32 only ever sees 3.3 V.</text>
+  <text class="sub" x="20" y="64">SeaTalk = one bidirectional 12 V open-collector line, 4800-8S1.</text>
+
+  <!-- ===================== RAILS ===================== -->
+  <line class="wire" x1="60" y1="90" x2="960" y2="90"/>
+  <text class="lbl rail12" x="60" y="82">+12 V  (on-board bus 12 V  &#8592;  J1.1)</text>
+
+  <line class="wire" x1="60" y1="620" x2="960" y2="620"/>
+  <text class="lbl railg" x="60" y="640">GND  (board GND = SeaTalk signal ground  &#8592;  J1.3)</text>
+
+  <!-- ===================== 5 V SUPPLY (top right, right-to-left) ===================== -->
+  <!-- +12V tap -->
+  <circle class="node" cx="930" cy="90" r="4"/>
+  <line class="wire" x1="930" y1="90" x2="930" y2="150"/>
+  <line class="wire" x1="930" y1="150" x2="900" y2="150"/>
+  <!-- D2 1N5817 reverse-polarity diode, pointing LEFT (anode right = +12V, cathode left = regulator) -->
+  <polygon points="900,138 900,162 880,150" fill="#111"/>
+  <line class="wire" x1="880" y1="138" x2="880" y2="162"/>
+  <text class="sub" x="790" y="116" font-size="11">D2 1N5817 (reused)</text>
+  <line class="wire" x1="880" y1="150" x2="820" y2="150"/>
+  <!-- C_in -->
+  <circle class="node" cx="850" cy="150" r="4"/>
+  <line class="wire" x1="850" y1="150" x2="850" y2="182"/>
+  <line class="wire" x1="838" y1="182" x2="862" y2="182"/>
+  <line class="wire" x1="838" y1="190" x2="862" y2="190"/>
+  <line class="wire" x1="850" y1="190" x2="850" y2="205"/>
+  <use xlink:href="#gnd" href="#gnd" x="850" y="205"/>
+  <text class="sub" x="866" y="196" font-size="11">C_in 0.33 &#181;F</text>
+  <!-- 78L05 -->
+  <rect class="box" x="740" y="125" width="80" height="50"/>
+  <text class="lbl" x="755" y="148">78L05</text>
+  <text class="pnum" x="744" y="168">OUT</text>
+  <text class="pnum" x="800" y="168">IN</text>
+  <line class="wire" x1="780" y1="175" x2="780" y2="205"/>
+  <use xlink:href="#gnd" href="#gnd" x="780" y="205"/>
+  <!-- +5V line -->
+  <line class="wire" x1="740" y1="150" x2="510" y2="150"/>
+  <text class="lbl rail5" x="590" y="142">+5 V</text>
+  <!-- C_out -->
+  <circle class="node" cx="700" cy="150" r="4"/>
+  <line class="wire" x1="700" y1="150" x2="700" y2="182"/>
+  <line class="wire" x1="688" y1="182" x2="712" y2="182"/>
+  <line class="wire" x1="688" y1="190" x2="712" y2="190"/>
+  <line class="wire" x1="700" y1="190" x2="700" y2="205"/>
+  <use xlink:href="#gnd" href="#gnd" x="700" y="205"/>
+  <text class="sub" x="716" y="196" font-size="11">C_out</text>
+  <text class="sub" x="716" y="209" font-size="11">0.1 &#181;F</text>
+  <!-- C_dec at chip VCC -->
+  <circle class="node" cx="560" cy="150" r="4"/>
+  <line class="wire" x1="560" y1="150" x2="560" y2="182"/>
+  <line class="wire" x1="548" y1="182" x2="572" y2="182"/>
+  <line class="wire" x1="548" y1="190" x2="572" y2="190"/>
+  <line class="wire" x1="560" y1="190" x2="560" y2="205"/>
+  <use xlink:href="#gnd" href="#gnd" x="560" y="205"/>
+  <text class="sub" x="576" y="196" font-size="11">C_dec 0.1 &#181;F</text>
+  <text class="sub" x="576" y="209" font-size="11">(at pin 14)</text>
+
+  <!-- ===================== DATA NODE ===================== -->
+  <text class="pin" x="20" y="305">J1.2 DATA</text>
+  <line class="wire" x1="100" y1="300" x2="150" y2="300"/>
+  <circle class="node" cx="150" cy="300" r="4"/>
+  <!-- DATA spine x=150 from R1 bottom (200) to RX lane (430) -->
+  <line class="wire" x1="150" y1="200" x2="150" y2="430"/>
+  <!-- R1 pull-up to +12V -->
+  <circle class="node" cx="150" cy="90" r="4"/>
+  <line class="wire" x1="150" y1="90" x2="150" y2="120"/>
+  <rect class="box" x="135" y="120" width="30" height="60"/>
+  <line class="wire" x1="150" y1="180" x2="150" y2="200"/>
+  <text class="lbl" x="172" y="150">R1</text>
+  <text class="sub" x="172" y="166">10 k&#8486; (existing R_pull)</text>
+
+  <!-- ===================== 74LS07 PACKAGE ===================== -->
+  <rect class="box" x="420" y="240" width="180" height="260"/>
+  <text class="lbl" x="478" y="262">SN74LS07N</text>
+  <text class="sub" x="440" y="370" font-size="11">open-collector, 30 V out</text>
+  <text class="sub" x="430" y="490" font-size="10">unused in 5, 9, 11, 13 &#8594; GND</text>
+  <!-- VCC pin 14 -->
+  <line class="wire" x1="510" y1="150" x2="510" y2="240"/>
+  <circle class="node" cx="510" cy="150" r="4"/>
+  <text class="pnum" x="515" y="236">14 VCC</text>
+  <!-- GND pin 7 -->
+  <line class="wire" x1="510" y1="500" x2="510" y2="620"/>
+  <circle class="node" cx="510" cy="620" r="4"/>
+  <text class="pnum" x="515" y="514">7 GND</text>
+
+  <!-- ===================== TX LANE (y=300) : GPIO26 -> U2A -> DATA ===================== -->
+  <text class="sub" x="250" y="290">TX</text>
+  <line class="wire" x1="150" y1="300" x2="450" y2="300"/>
+  <polygon class="tri" points="510,280 510,320 450,300"/>
+  <text class="sub" x="483" y="304" font-size="10">A</text>
+  <text class="pnum" x="404" y="294">2</text>
+  <text class="pnum" x="604" y="294">1</text>
+  <line class="wire" x1="510" y1="300" x2="800" y2="300"/>
+  <text class="lbl" x="440" y="338">U2A</text>
+
+  <!-- ===================== RX LANE (y=430) : DATA -> R2 -> [R3, D1] -> U2B -> R5 -> GPIO27 ===================== -->
+  <text class="sub" x="190" y="420">RX</text>
+  <circle class="node" cx="150" cy="430" r="4"/>
+  <line class="wire" x1="150" y1="430" x2="230" y2="430"/>
+  <rect class="box" x="230" y="415" width="60" height="30"/>
+  <text class="lbl" x="240" y="408">R2</text>
+  <text class="sub" x="232" y="462">68 k&#8486;</text>
+  <line class="wire" x1="290" y1="430" x2="450" y2="430"/>
+  <!-- R3 to GND -->
+  <circle class="node" cx="340" cy="430" r="4"/>
+  <line class="wire" x1="340" y1="430" x2="340" y2="470"/>
+  <rect class="box" x="325" y="470" width="30" height="60"/>
+  <line class="wire" x1="340" y1="530" x2="340" y2="620"/>
+  <circle class="node" cx="340" cy="620" r="4"/>
+  <text class="lbl" x="280" y="500">R3</text>
+  <text class="sub" x="270" y="516">27 k&#8486;</text>
+  <!-- D1 zener to GND, cathode (bar) UP toward pin 3 -->
+  <circle class="node" cx="390" cy="430" r="4"/>
+  <line class="wire" x1="390" y1="430" x2="390" y2="480"/>
+  <polygon points="378,502 402,502 390,482" fill="#111"/>
+  <polyline class="wire" points="374,476 378,482 402,482 406,488"/>
+  <line class="wire" x1="390" y1="502" x2="390" y2="620"/>
+  <circle class="node" cx="390" cy="620" r="4"/>
+  <text class="lbl" x="398" y="530">D1</text>
+  <text class="sub" x="398" y="546" font-size="11">1N4733A 5.1 V</text>
+  <text class="sub" x="398" y="559" font-size="11">band to pin 3</text>
+  <!-- U2B -->
+  <polygon class="tri" points="450,410 450,450 510,430"/>
+  <text class="sub" x="462" y="434" font-size="10">B</text>
+  <text class="pnum" x="404" y="424">3</text>
+  <text class="pnum" x="604" y="424">4</text>
+  <line class="wire" x1="510" y1="430" x2="800" y2="430"/>
+  <text class="lbl" x="440" y="472">U2B</text>
+  <text class="sub" x="190" y="386" font-size="11">~3.4 V at pin 3 when DATA = 12 V</text>
+  <!-- R5 pull-up to +3.3V -->
+  <circle class="node" cx="680" cy="430" r="4"/>
+  <line class="wire" x1="680" y1="430" x2="680" y2="410"/>
+  <rect class="box" x="665" y="350" width="30" height="60"/>
+  <line class="wire" x1="680" y1="350" x2="680" y2="335"/>
+  <line class="wire" x1="668" y1="335" x2="692" y2="335"/>
+  <text class="lbl rail33" x="618" y="330">+3.3 V</text>
+  <text class="sub" x="702" y="374">R5</text>
+  <text class="sub" x="702" y="390">10 k&#8486;</text>
+  <text class="sub" x="702" y="404" font-size="10">to 3.3 V, NOT 5 V</text>
+
+  <!-- ===================== ESP32 GPIO HEADER ===================== -->
+  <rect class="box" x="800" y="260" width="190" height="220"/>
+  <text class="title" x="812" y="285" font-size="14">SH-ESP32 header</text>
+  <text class="pin" x="808" y="305">GPIO26</text>
+  <text class="sub" x="808" y="320" font-size="11">= TX_OUT</text>
+  <text class="pin" x="808" y="435">GPIO27</text>
+  <text class="sub" x="808" y="450" font-size="11">= RX_IN</text>
+  <text class="sub" x="808" y="345" font-size="10">+3.3 V from the board's</text>
+  <text class="sub" x="808" y="358" font-size="10">3.3 V output pads</text>
+  <text class="sub" x="808" y="384" font-size="10">Opto pads ISO_IN / ISO_OUT</text>
+  <text class="sub" x="808" y="397" font-size="10">not used. Remove R_in and</text>
+  <text class="sub" x="808" y="410" font-size="10">D_out from DATA.</text>
+
+  <!-- ===================== FOOTER ===================== -->
+  <text class="sub" x="20" y="668">TX: GPIO26 LOW -&gt; U2A output ON -&gt; DATA pulled low.  GPIO26 HIGH -&gt; output off, R1 restores 12 V.  Avoid GPIO12 (boot strap).</text>
+  <text class="sub" x="20" y="686">RX: DATA 12 V -&gt; R2/R3 ~3.4 V -&gt; U2B off -&gt; R5 pulls GPIO27 to 3.3 V.  Non-inverting both ways: set SoftwareSerial invert=false.</text>
+</svg>

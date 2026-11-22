@@ -26,14 +26,15 @@ SeaTalk::SeaTalk(SignalManager *signalManager)
 }
 
 /// @brief Log the SeaTalk opto GPIO assignments and their current digital states.
-///        RX_IN (opto input) and TX_OUT (opto output) are driven by SoftwareSerial;
-///        digitalRead() gives a snapshot of the current line level (SeaTalk idles high).
+///        RX_IN and TX_OUT are driven by SoftwareSerial; digitalRead() gives a
+///        snapshot of the pin level. With the inverting NPN interface, an idle bus
+///        (DATA at 12 V) reads RX_IN=0 and TX_OUT=0.
 void SeaTalk::logOptoPins()
 {
     int rxVal = digitalRead(RX_IN);
     int txVal = digitalRead(TX_OUT);
     snprintf(logbuf, LOGBUF_SIZE,
-             "ST GPIO: opto RX_IN=GPIO%d val=%d, opto TX_OUT=GPIO%d val=%d, LED_PIN=GPIO%d",
+             "ST GPIO: RX_IN=GPIO%d val=%d, TX_OUT=GPIO%d val=%d, LED_PIN=GPIO%d",
              RX_IN, rxVal, TX_OUT, txVal, LED_PIN);
     log::toAll(logbuf);
 }
@@ -128,31 +129,28 @@ void SeaTalk::optoLogLoop()
     log::toAll(logbuf);
 }
 
-/// @brief Sample raw RX_IN level over a window and report idle level + activity.
-/// RX_IN/GPIO35 taps the J1.2 DATA node through the R_in/opto RX leg; this is
-/// the only software view of DATA. At idle (bus at 12V) the inverted opto path
-/// should hold GPIO35 steady; any low pulse means DATA activity reached RX.
-/// Zero lows here while TX is driving means the RX leg (R_in/ISO_IN/opto) or
-/// the DATA node itself is not working, NOT just a silent bus.
+/// @brief Sample raw RX_IN level over a window and report the bus state.
+/// RX_IN is Q2's collector, the only software view of the J1.2 DATA node.
+/// Q2 inverts: DATA at 12 V (idle) -> Q2 on -> RX_IN LOW; DATA pulled low -> RX_IN HIGH.
+/// A steady HIGH means DATA is being held low (jammed bus, or Q2/R_b2 not connected).
+/// No change while this device transmits means the RX stage is not seeing DATA.
 void SeaTalk::optoProbe(unsigned long durationMs)
 {
-    // Temporarily take over the RX pin for a raw read. SoftwareSerial keeps it
-    // as an input, so sampling with digitalRead is non-destructive.
+    // SoftwareSerial keeps RX_IN as an input, so sampling with digitalRead is non-destructive.
     unsigned long start = millis();
     unsigned long samples = 0, rxHigh = 0, rxLow = 0;
-    int rxMin = 1, rxMax = 0;
     while (millis() - start < durationMs) {
-        int v = digitalRead(RX_IN);
-        if (v) { rxHigh++; if (v > rxMax) rxMax = v; }
-        else   { rxLow++;  rxMin = 0; }
+        if (digitalRead(RX_IN)) rxHigh++;
+        else                    rxLow++;
         samples++;
     }
     int txLevel = digitalRead(TX_OUT);
+    const char *state = (rxHigh == 0) ? "idle (DATA at 12V)"
+                      : (rxLow == 0)  ? "DATA held LOW!"
+                                      : "toggling (traffic)";
     snprintf(logbuf, LOGBUF_SIZE,
-             "ST opto probe (%lums): RX_IN(GPIO%d) idle=%s high=%lu low=%lu of %lu; TX_OUT(GPIO%d) now=%d",
-             durationMs, RX_IN,
-             (rxLow == 0) ? "HIGH(steady)" : (rxHigh == 0) ? "LOW(stuck!)" : "toggling",
-             rxHigh, rxLow, samples, TX_OUT, txLevel);
+             "ST probe (%lums): RX_IN(GPIO%d) %s high=%lu low=%lu of %lu; TX_OUT(GPIO%d) now=%d",
+             durationMs, RX_IN, state, rxHigh, rxLow, samples, TX_OUT, txLevel);
     log::toAll(logbuf);
 }
 

@@ -1,0 +1,143 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1000" height="700" viewBox="0 0 1000 700" font-family="Helvetica,Arial,sans-serif">
+  <style>
+    .wire{stroke:#111;stroke-width:2;fill:none}
+    .node{fill:#111}
+    .lbl{font-size:14px;fill:#111}
+    .sub{font-size:12px;fill:#444}
+    .pin{font-size:13px;fill:#005a9c;font-weight:bold}
+    .pnum{font-size:11px;fill:#005a9c}
+    .box{fill:#f4f4f4;stroke:#111;stroke-width:2}
+    .qcirc{fill:none;stroke:#111;stroke-width:1.5}
+    .title{font-size:18px;fill:#111;font-weight:bold}
+    .rail12{fill:#b00}
+    .rail33{fill:#606}
+    .railg{fill:#060}
+  </style>
+  <defs>
+    <!-- local ground symbol, origin at top of the symbol -->
+    <g id="gnd" class="wire">
+      <line x1="-10" y1="0" x2="10" y2="0"/>
+      <line x1="-6" y1="5" x2="6" y2="5"/>
+      <line x1="-2" y1="10" x2="2" y2="10"/>
+    </g>
+  </defs>
+
+  <text class="title" x="20" y="28">SeaTalk &#8596; SH-ESP32 with two NPN transistors (no 5 V supply needed)</text>
+  <text class="sub" x="20" y="48">Discrete version of the original board's Q1/Q2 without the 6N137. Q1 = TX pull-down, Q2 = RX level shifter. ESP32 only ever sees 3.3 V.</text>
+  <text class="sub" x="20" y="64">SeaTalk = one bidirectional 12 V open-collector line, 4800-8S1. Q1, Q2 = 2N3904 (or BC337, C1815, 2N2222A).</text>
+
+  <!-- ===================== RAILS ===================== -->
+  <line class="wire" x1="60" y1="90" x2="960" y2="90"/>
+  <text class="lbl rail12" x="60" y="82">+12 V  (on-board bus 12 V  &#8592;  J1.1)</text>
+
+  <line class="wire" x1="60" y1="620" x2="960" y2="620"/>
+  <text class="lbl railg" x="60" y="640">GND  (board GND = SeaTalk signal ground  &#8592;  J1.3)</text>
+
+  <!-- ===================== DATA NODE ===================== -->
+  <text class="pin" x="20" y="305">J1.2 DATA</text>
+  <line class="wire" x1="100" y1="300" x2="150" y2="300"/>
+  <circle class="node" cx="150" cy="300" r="4"/>
+  <!-- DATA spine x=150 from R1 bottom (200) down to RX lane (500) -->
+  <line class="wire" x1="150" y1="200" x2="150" y2="500"/>
+  <!-- R1 pull-up to +12V -->
+  <circle class="node" cx="150" cy="90" r="4"/>
+  <line class="wire" x1="150" y1="90" x2="150" y2="120"/>
+  <rect class="box" x="135" y="120" width="30" height="60"/>
+  <line class="wire" x1="150" y1="180" x2="150" y2="200"/>
+  <text class="lbl" x="172" y="150">R1</text>
+  <text class="sub" x="172" y="166">10 k&#8486; (existing R_pull)</text>
+
+  <!-- ===================== TX STAGE: Q1 (base on the RIGHT, mirrored) ===================== -->
+  <text class="sub" x="250" y="290">TX</text>
+  <!-- DATA -> Q1 collector -->
+  <line class="wire" x1="150" y1="300" x2="430" y2="300"/>
+  <circle class="qcirc" cx="448" cy="340" r="26"/>
+  <!-- base bar -->
+  <line class="wire" x1="460" y1="322" x2="460" y2="358" style="stroke-width:3"/>
+  <!-- collector: bar -> up-left -> DATA lane -->
+  <polyline class="wire" points="460,332 430,312 430,300"/>
+  <!-- emitter: bar -> down-left -> local GND -->
+  <polyline class="wire" points="460,348 430,368 430,395"/>
+  <polygon points="434,368 444.5,365.8 440.1,359.2" fill="#111"/>
+  <use xlink:href="#gnd" href="#gnd" x="430" y="395"/>
+  <text class="lbl" x="372" y="336">Q1</text>
+  <text class="sub" x="356" y="352" font-size="11">2N3904</text>
+  <text class="pnum" x="414" y="318">C</text>
+  <text class="pnum" x="414" y="372">E</text>
+  <text class="pnum" x="478" y="333">B</text>
+  <!-- base network: base -> node -> R_b1 -> GPIO26; R_pd1 node -> GND -->
+  <line class="wire" x1="460" y1="340" x2="560" y2="340"/>
+  <circle class="node" cx="540" cy="340" r="4"/>
+  <rect class="box" x="560" y="325" width="60" height="30"/>
+  <text class="lbl" x="568" y="318">R_b1</text>
+  <text class="sub" x="630" y="335">2.2 k&#8486; (~1.1 mA)</text>
+  <line class="wire" x1="620" y1="340" x2="800" y2="340"/>
+  <line class="wire" x1="540" y1="340" x2="540" y2="355"/>
+  <rect class="box" x="525" y="355" width="30" height="50"/>
+  <line class="wire" x1="540" y1="405" x2="540" y2="415"/>
+  <use xlink:href="#gnd" href="#gnd" x="540" y="415"/>
+  <text class="lbl" x="482" y="380">R_pd1</text>
+  <text class="sub" x="482" y="396">10 k&#8486;</text>
+
+  <!-- ===================== RX STAGE: Q2 (base on the LEFT) ===================== -->
+  <text class="sub" x="190" y="490">RX</text>
+  <circle class="node" cx="150" cy="500" r="4"/>
+  <line class="wire" x1="150" y1="500" x2="230" y2="500"/>
+  <rect class="box" x="230" y="485" width="60" height="30"/>
+  <text class="lbl" x="236" y="478">R_b2</text>
+  <text class="sub" x="232" y="532">100 k&#8486;</text>
+  <line class="wire" x1="290" y1="500" x2="400" y2="500"/>
+  <!-- R_pd2 to GND -->
+  <circle class="node" cx="340" cy="500" r="4"/>
+  <line class="wire" x1="340" y1="500" x2="340" y2="540"/>
+  <rect class="box" x="325" y="540" width="30" height="50"/>
+  <line class="wire" x1="340" y1="590" x2="340" y2="620"/>
+  <circle class="node" cx="340" cy="620" r="4"/>
+  <text class="lbl" x="272" y="562">R_pd2</text>
+  <text class="sub" x="272" y="578">22 k&#8486;</text>
+  <text class="sub" x="190" y="458" font-size="11">~2.2 V at base when DATA = 12 V</text>
+  <!-- Q2 -->
+  <circle class="qcirc" cx="412" cy="500" r="26"/>
+  <line class="wire" x1="400" y1="482" x2="400" y2="518" style="stroke-width:3"/>
+  <!-- collector: bar -> up-right -> output node -->
+  <polyline class="wire" points="400,492 430,472 430,450"/>
+  <!-- emitter: bar -> down-right -> GND rail -->
+  <polyline class="wire" points="400,508 430,528 430,620"/>
+  <polygon points="426,527 415.5,524.8 419.9,518.2" fill="#111"/>
+  <circle class="node" cx="430" cy="620" r="4"/>
+  <text class="lbl" x="446" y="514">Q2</text>
+  <text class="sub" x="446" y="530" font-size="11">2N3904</text>
+  <text class="pnum" x="436" y="472">C</text>
+  <text class="pnum" x="436" y="544">E</text>
+  <text class="pnum" x="374" y="492">B</text>
+  <!-- collector output -> GPIO27, R_c pull-up to +3.3V -->
+  <line class="wire" x1="430" y1="450" x2="800" y2="450"/>
+  <circle class="node" cx="680" cy="450" r="4"/>
+  <line class="wire" x1="680" y1="450" x2="680" y2="430"/>
+  <rect class="box" x="665" y="375" width="30" height="55"/>
+  <line class="wire" x1="680" y1="375" x2="680" y2="362"/>
+  <line class="wire" x1="668" y1="362" x2="692" y2="362"/>
+  <text class="lbl rail33" x="618" y="374">+3.3 V</text>
+  <text class="sub" x="702" y="398">R_c</text>
+  <text class="sub" x="702" y="414">10 k&#8486;</text>
+  <text class="sub" x="702" y="428" font-size="10">to 3.3 V</text>
+
+  <!-- ===================== ESP32 GPIO HEADER ===================== -->
+  <rect class="box" x="800" y="290" width="190" height="270"/>
+  <text class="title" x="812" y="315" font-size="14">SH-ESP32 header</text>
+  <text class="pin" x="808" y="345">GPIO26</text>
+  <text class="sub" x="808" y="360" font-size="11">= TX_OUT</text>
+  <text class="sub" x="808" y="384" font-size="10">+3.3 V from the board's</text>
+  <text class="sub" x="808" y="397" font-size="10">3.3 V output pads</text>
+  <text class="sub" x="808" y="415" font-size="10">Avoid GPIO12 (boot strap)</text>
+  <text class="pin" x="808" y="455">GPIO27</text>
+  <text class="sub" x="808" y="470" font-size="11">= RX_IN</text>
+  <text class="sub" x="808" y="500" font-size="10">Opto pads ISO_IN / ISO_OUT</text>
+  <text class="sub" x="808" y="513" font-size="10">not used. Remove R_in and</text>
+  <text class="sub" x="808" y="526" font-size="10">D_out from DATA.</text>
+  <text class="sub" x="808" y="546" font-size="10">2N3904 legs: E-B-C (flat face)</text>
+
+  <!-- ===================== FOOTER ===================== -->
+  <text class="sub" x="20" y="668">TX: GPIO26 HIGH -&gt; Q1 on -&gt; DATA pulled low.  GPIO26 LOW -&gt; Q1 off, R1 restores 12 V.  R_pd1 holds Q1 off while the ESP32 boots.</text>
+  <text class="sub" x="20" y="686">RX: DATA 12 V -&gt; Q2 on -&gt; GPIO27 low.  DATA low -&gt; Q2 off -&gt; R_c pulls GPIO27 to 3.3 V.  Both stages invert: keep SoftwareSerial invert=true.</text>
+</svg>

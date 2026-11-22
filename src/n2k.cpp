@@ -13,8 +13,9 @@
 
 // ─── Configuration ─────────────────────────────────────────────────────────────
 // ESP32 native CAN bus pins - adjust for your hardware
-#define N2K_CAN_TX_PIN GPIO_NUM_26
-#define N2K_CAN_RX_PIN GPIO_NUM_27
+// SH-ESP32 on-board isolated CAN transceiver (4-pin CAN connector)
+#define N2K_CAN_TX_PIN GPIO_NUM_32
+#define N2K_CAN_RX_PIN GPIO_NUM_34
 
 #define DEGTORAD 0.0174532925
 

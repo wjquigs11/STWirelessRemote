@@ -42,7 +42,7 @@ This fork adds direct HTTP-based wind data acquisition from a [Garmin-N2K-Mast-R
                    │  Calls SeaTalk encode methods
                    ▼
 ┌──────────────────────────────────────────┐
-│  SeaTalk (4800 baud, GPIO 32 RX / 33 TX)│
+│  SeaTalk (4800 baud, GPIO 27 RX / 26 TX)│
 │  - sendApparentWindAngle(angle)          │
 │  - sendApparentWindSpeed(knots)          │
 │  - Collision detection with 5x retry    │
@@ -100,11 +100,13 @@ Enabled features (defined in `platformio.ini`):
 
 ## Hardware
 
-- **ESP32** (NodeMCU-32S)
-- **GPIO 32** — SeaTalk RX (inverted logic, 4800 baud)
-- **GPIO 33** — SeaTalk TX
+- **Hat Labs SH-ESP32** (Rev 2.1.0)
+- **GPIO 27** — SeaTalk RX (inverted logic, 4800 baud)
+- **GPIO 26** — SeaTalk TX (inverted logic)
+- **GPIO 32 / 34** — N2K CAN TX / RX (on-board isolated transceiver)
+- **GPIO 13** — 433 MHz RF remote receiver data
 - **GPIO 2** — Status LED (blinks during bus writes)
-- SeaTalk bus requires level shifting to 12V signaling
+- SeaTalk bus interface: two NPN transistors, see `docs/seatalk-sh-esp32-npn.svg`
 
 ## Dependencies
 

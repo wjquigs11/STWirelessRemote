@@ -4,7 +4,7 @@ RemoteControl::RemoteControl(SeaTalk *seaTalk, Options *options)
 {
     _seaTalk = seaTalk;
     _options = options;
-    _mySwitch.enableReceive(34);
+    _mySwitch.enableReceive(RF_RX_PIN);
 }
 
 void RemoteControl::processRemote()

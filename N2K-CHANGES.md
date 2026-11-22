@@ -17,12 +17,12 @@ ESP32 (`WindClient`). Now the device can also read wind directly from an N2K bus
 
 ## Hardware
 
-Default CAN pins (defined in `n2k.cpp`, adjust for your board):
-- `N2K_CAN_TX_PIN` = GPIO 5
-- `N2K_CAN_RX_PIN` = GPIO 4
+CAN pins (defined in `n2k.cpp`), set for the SH-ESP32's on-board isolated CAN transceiver:
+- `N2K_CAN_TX_PIN` = GPIO 32
+- `N2K_CAN_RX_PIN` = GPIO 34
 
-A CAN transceiver (e.g., SN65HVD230 or MCP2551) is required between the ESP32 and the
-NMEA 2000 bus.
+On other boards, a CAN transceiver (e.g., SN65HVD230 or MCP2551) is required between the
+ESP32 and the NMEA 2000 bus; adjust the pins to match.
 
 ## Files Modified
 

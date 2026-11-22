@@ -6,6 +6,8 @@
 #include "Options.h"
 #include "Commands.h"
 
+// 433 MHz receiver data pin. Not GPIO34: on the SH-ESP32 that is CAN RX.
+#define RF_RX_PIN 13
 #define KEY_DELAY 300
 #define BEEP_DURATION 150
 

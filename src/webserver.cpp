@@ -158,8 +158,8 @@ void startAppWebServer() {
     seatalk->getOptoChanges(rxChanges, txChanges, intervalMs);
     char buf[160];
     snprintf(buf, sizeof(buf),
-             "opto monitor %s; changes since last call (%lu ms): RX_IN(GPIO35)=%lu TX_OUT(GPIO33)=%lu",
-             seatalk->getOptoLog() ? "on" : "off", intervalMs, rxChanges, txChanges);
+             "opto monitor %s; changes since last call (%lu ms): RX_IN(GPIO%d)=%lu TX_OUT(GPIO%d)=%lu",
+             seatalk->getOptoLog() ? "on" : "off", intervalMs, RX_IN, rxChanges, TX_OUT, txChanges);
     request->send(200, "text/plain", buf);
   });
 #endif
