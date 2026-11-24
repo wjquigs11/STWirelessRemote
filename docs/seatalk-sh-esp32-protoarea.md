@@ -1,4 +1,38 @@
-# SeaTalk ↔ SH-ESP32 Proto-Area Subcircuit
+# SeaTalk ↔ SH-ESP32 Proto-Area Subcircuit (opto-block version)
+
+> **Status: superseded.** The current build uses two NPN transistors instead of
+> the opto block: `seatalk-sh-esp32-npn.svg` (circuit) and
+> `seatalk-sh-esp32-npn-protolayout.svg` (proto-area layout), firmware RX = GPIO27,
+> TX = GPIO26, `invert=true`. This document is kept as a record of the opto design.
+>
+> **Corrected after reading the Hat Labs Rev 2.0.0 schematic** (opto sheet, page 8,
+> <https://docs.hatlabs.fi/sh-esp32/revisions/assets/SH-ESP32-2.0.0-schema.pdf>).
+> The first version of this document had three errors, each of which stops the
+> interface working:
+>
+> 1. **ISO_OUT polarity.** ISO_OUT is the collector of an NPN (Q901, MMBT5551,
+>    160 V) with a 3.9 kΩ pull-up (R904) to V_ISO. The opto between GPIO33 and Q901
+>    inverts, so **GPIO33 LOW turns Q901 on and pulls ISO_OUT low**; GPIO33 HIGH
+>    releases it. The old text said GPIO33 HIGH pulls DATA low.
+> 2. **D_out was backwards.** With the band toward DATA, the diode blocks current
+>    flowing from DATA into ISO_OUT, so TX could never pull the bus low. D_out is
+>    now removed: ISO_OUT is an open-collector output and connects straight to DATA,
+>    and R904 then adds to the bus pull-up.
+> 3. **Firmware polarity.** Both opto stages are non-inverting (DATA high gives
+>    GPIO35 high; GPIO33 high leaves DATA high), so SoftwareSerial needs
+>    `invert=false`. The old text said `invert=true`, which would hold the bus low
+>    whenever the ESP32 is idle.
+>
+> A fourth issue is bus loading: R_in 2.2 kΩ plus the on-board R905 2.2 kΩ draws
+> about 2.5 mA from DATA into the opto LED. Against a 10 kΩ pull-up alone that
+> holds DATA near 4.4 V at idle, which matches the 4.5 V measured during bring-up.
+> R_in is now 5.6 kΩ (about 1.4 mA, the LED current Hat Labs designed for).
+> Even so, DATA idles around 9 V rather than 12 V with only R_pull and R904 as
+> pull-ups. That loading is the main reason the NPN version replaced this one.
+>
+> The schematic is Rev 2.0.0; the board is Rev 2.1.0. Confirm the output stage with
+> a meter before relying on it: with GPIO33 held LOW, ISO_OUT to ISO_GND should read
+> near 0 V.
 
 Companion to `seatalk-sh-esp32-handoff.md`. Open questions resolved:
 
@@ -58,18 +92,21 @@ CAN_L ───────────► SH-ESP32 4-pin CAN_L     NMEA 2000 da
 | `TX_OUT` | **33** | **ISO_OUT** (OPTO_OUT) | unchanged, already matched board |
 | `LED_PIN`| **2**  | on-board blue LED      | unchanged |
 
-`_mySerial.begin(4800, SWSERIAL_8S1, RX_IN, TX_OUT, true, 95)` — keep the
-`invert=true` flag (SeaTalk idle 12 V → opto conducts → GPIO35 high = UART mark).
+`_mySerial.begin(4800, SWSERIAL_8S1, RX_IN, TX_OUT, false, 95)` — **`invert=false`**
+for the opto block. Both stages are non-inverting: SeaTalk idle 12 V → opto conducts
+→ GPIO35 high = UART mark, and GPIO33 high (UART idle) → Q901 off → DATA stays high.
+(The current NPN build inverts on both stages and uses `invert=true`.)
 
 ## Proto-area BOM (only these are hand-soldered)
 
 | Ref | Value | Role |
 |---|---|---|
 | R_pull | **10 kΩ** | SeaTalk DATA bus pull-up to on-board +12 V (replicates original R3) |
-| R_in   | 2.2 kΩ | series current-limit, DATA → **ISO_IN** pad (~4–5 mA at 12 V) |
-| D_out  | 1N5817 (Schottky, preferred) | **ISO_OUT** → DATA, cathode to DATA; open-collector pull-down only. Low Vf (~0.3–0.45 V) keeps the driven low close to ground. Substitutes: 1N4148 (ok); 1N4007 (works but sluggish/higher drop, last resort). |
+| R_in   | **5.6 kΩ** (was 2.2 kΩ) | series current-limit, DATA → **ISO_IN** pad. With the on-board R905 (2.2 kΩ) this gives ~1.4 mA LED current at 12 V. The original 2.2 kΩ drew ~2.5 mA and held DATA near 4.4 V. |
+| ~~D_out~~ | **none** (was 1N5817, fitted backwards) | **ISO_OUT connects directly to DATA.** ISO_OUT is already an open-collector NPN (Q901). If a diode is ever wanted here, the band (cathode) must face **ISO_OUT**, but it adds ~0.3 V to the driven low and stops R904 helping the pull-up. |
 
-Dropped vs. original discrete board: U2 7805, C1, C2 (→ on-board SMPS);
+Dropped vs. original discrete board (the on-board opto block contains its own
+output transistor, Q901, and pull-up, R904 3.9 kΩ): U2 7805, C1, C2 (→ on-board SMPS);
 U3 6N137, R5, C3, R1 (→ opto IN); Q2, R2, R7 (→ opto OUT); Q1, R4, R6 (→ opto IN
 replaces RX buffer). Original R3 (10 kΩ bus pull-up) is retained as **R_pull**.
 
@@ -85,27 +122,29 @@ replaces RX buffer). Original R3 (10 kΩ bus pull-up) is retained as **R_pull**.
         |                                   |
   J1.2  o------+-------------------+---------(---------------------+
   SeaTalk DATA |                   |         |                     |
-              [R_in 2.2k]          |      +--+--------------------+|
+              [R_in 5.6k]          |      +--+--------------------+|
                |                   |      |  SH-ESP32 OPTO BLOCK  ||
         ISO_IN pad o--------+      |      |  (Rev 2.1.0)          ||
                             |      |      | ISO_IN  = GPIO35 (RX) ||
                             |      |      | ISO_OUT = GPIO33 (TX) ||
                             |      |      +-----------------------+|
                             |      |                               |
-                            |      +----|<|---- ISO_OUT pad --------+
-                            |        D_out    (opto, driven when
-                            |        1N5817    GPIO33 = HIGH;
-                            |        (K→DATA)   pulls DATA low only)
+                            |      +---------- ISO_OUT pad --------+
+                            |        direct wire, no diode
+                            |        (ISO_OUT = Q901 collector, 3.9k
+                            |         pull-up R904 to V_ISO; pulls
+                            |         DATA low when GPIO33 = LOW)
                             |
    J1.1 +12V ---> on-board +12 V (bus side)
    J1.3 GND  ---> board GND  === ISO_GND pad === SeaTalk signal ground
 ```
 
 Signal flow:
-- **RX:** DATA pulses low → ISO_IN opto LED current changes → OPTO_IN/GPIO35
-  follows → SoftwareSerial (inverted) decodes 4800-8S1.
-- **TX:** GPIO33 HIGH → ISO_OUT conducts → pulls DATA toward GND through D_out
-  (open-collector). GPIO33 LOW → ISO_OUT off → R_pull returns DATA to 12 V.
+- **RX:** DATA pulses low → ISO_IN opto LED turns off → OPTO_IN/GPIO35 goes low
+  (it follows DATA, non-inverting) → SoftwareSerial with `invert=false` decodes 4800-8S1.
+- **TX:** GPIO33 LOW → on-board opto off → R903 turns Q901 on → ISO_OUT pulls DATA
+  to ~0.2 V. GPIO33 HIGH → Q901 off → R_pull and R904 return DATA high
+  (non-inverting).
   Firmware reads each TX byte back on RX for collision detection — that loopback
   works because TX and RX share the one DATA node.
 
@@ -122,9 +161,8 @@ net connectivity matters.
 | +12V | on-board +12 V | R_pull top | wire | B1 |
 | DATA | J1 pin2 (Data) | R_pull bottom | wire | B2–C2 |
 | DATA | R_pull bottom | R_in "hot" end | wire | C2–D2 |
-| DATA | R_in "hot" end | D_out cathode (band) | wire | D2–E2 |
+| DATA | R_in "hot" end | ISO_OUT pad | wire (no diode) | D2 → ISO_OUT |
 | DATA_IN | R_in other end | ISO_IN pad | wire | D3 → ISO_IN |
-| DATA | D_out anode | ISO_OUT pad | wire | E2 → ISO_OUT |
 | GND | J1 pin3 (GND) | board GND pad | wire | — |
 | GND | board GND pad | ISO_GND pad | wire | — |
 
@@ -133,8 +171,8 @@ Placement sketch (proto grid, `.` = unused hole):
 ```
 col:  B    C    D    E    F ...
 row1 [+12]-........................  (feed +12V to R_pull top & V_ISO)
-row2 [Rpl]-[DATA]-[Rin]-[Dout]-....  (R_pull | R_in | D_out along the DATA node)
-row3  Rin->ISO_IN pad ... Dout->ISO_OUT pad
+row2 [Rpl]-[DATA]-[Rin]-..........  (R_pull | R_in along the DATA node)
+row3  Rin->ISO_IN pad ... DATA wire->ISO_OUT pad (no diode)
 ```
 
 ## Safety / bring-up checklist
@@ -142,10 +180,12 @@ row3  Rin->ISO_IN pad ... Dout->ISO_OUT pad
 1. Power the SH-ESP32 from the 12 V feed first; confirm the 3.3 V rail. Do NOT
    connect J1 Data yet.
 2. Bench-test RX against a known SeaTalk source (or the ST2000+) before enabling
-   TX. Confirm `invert=true` yields correctly-framed bytes at GPIO35.
-3. Verify TX drives DATA **low only** (scope the line): idle must sit at ~12 V
-   via R_pull, pulses go to near 0 V. A stuck-low line will jam the ST2000+ and
-   any other SeaTalk instrument.
+   TX. Confirm `invert=false` yields correctly-framed bytes at GPIO35, and that
+   DATA idles at 9 V or more with the RX leg connected.
+3. Verify TX drives DATA **low only** (scope the line): idle must sit high
+   (~9 V or more with the RX leg loading it), pulses go to near 0 V. With GPIO33
+   held LOW, DATA should read near 0 V; with GPIO33 HIGH, DATA should be high.
+   A stuck-low line will jam the ST2000+ and any other SeaTalk instrument.
 4. Confirm the ST2000+ motor current (0.5–1.5 A) returns to the bus on its own
    drop and does NOT flow through the SH-ESP32 (check the board's input is not
    warm / polyfuse not tripping while the pilot steers under load).

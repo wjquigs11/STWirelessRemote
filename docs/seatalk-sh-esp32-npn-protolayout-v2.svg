@@ -1,0 +1,360 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="890" viewBox="0 0 1000 890" font-family="Helvetica,Arial,sans-serif">
+  <style>
+    .lbl{font-size:14px;fill:#111}
+    .sub{font-size:12px;fill:#444}
+    .tiny{font-size:10px;fill:#444}
+    .title{font-size:18px;fill:#111;font-weight:bold}
+    .grid{font-size:12px;fill:#555}
+    .pad{fill:#e8c66a;stroke:#9a7b2a;stroke-width:1}
+    .hole{fill:#3a3a3a}
+    .board{fill:#3f4a3c}
+    .body{fill:#ffffff;fill-opacity:0.88;stroke:#111;stroke-width:1.5}
+    .pin{font-size:11px;fill:#005a9c;font-weight:bold}
+  </style>
+  <text class="title" x="20" y="28">SH-ESP32 proto area layout: two-NPN SeaTalk interface (R_b1 / R_pd1 swapped)</text>
+  <text class="sub" x="20" y="48">Top view, component side. Circuit: docs/seatalk-sh-esp32-npn.svg. Grid from the Rev 2.0 render; check pad labels on your Rev 2.1 board before soldering.</text>
+  <text class="sub" x="20" y="64">Coloured lines are bare-wire links / solder bridges on the BOTTOM side. Seen from the bottom, columns run T to B (mirror image).</text>
+  <rect class="board" x="30" y="85" width="940" height="415" rx="10"/>
+  <rect x="560" y="95" width="400" height="44" rx="4" fill="#222"/>
+  <text class="sub" x="568" y="153" style="fill:#ddd">GPIO header (top edge of board, right of the proto area)</text>
+  <circle cx="860" cy="117" r="9" fill="#d4af37" stroke="#000"/>
+  <text class="pin" x="840" y="103" style="fill:#fff">27</text>
+  <circle cx="910" cy="117" r="9" fill="#d4af37" stroke="#000"/>
+  <text class="pin" x="890" y="103" style="fill:#fff">26</text>
+  <line x1="55" y1="200" x2="120" y2="200" stroke="#9a7b2a" stroke-width="3"/>
+  <circle cx="55" cy="200" r="11" class="pad"/><circle cx="55" cy="200" r="4" class="hole"/>
+  <circle cx="120" cy="200" r="11" class="pad"/><circle cx="120" cy="200" r="4" class="hole"/>
+  <text class="grid" x="83" y="186" style="fill:#ccc">1</text>
+  <line x1="55" y1="240" x2="120" y2="240" stroke="#9a7b2a" stroke-width="3"/>
+  <circle cx="55" cy="240" r="11" class="pad"/><circle cx="55" cy="240" r="4" class="hole"/>
+  <circle cx="120" cy="240" r="11" class="pad"/><circle cx="120" cy="240" r="4" class="hole"/>
+  <text class="grid" x="83" y="226" style="fill:#ccc">2</text>
+  <line x1="55" y1="280" x2="120" y2="280" stroke="#9a7b2a" stroke-width="3"/>
+  <circle cx="55" cy="280" r="11" class="pad"/><circle cx="55" cy="280" r="4" class="hole"/>
+  <circle cx="120" cy="280" r="11" class="pad"/><circle cx="120" cy="280" r="4" class="hole"/>
+  <text class="grid" x="83" y="266" style="fill:#ccc">3</text>
+  <line x1="55" y1="320" x2="120" y2="320" stroke="#9a7b2a" stroke-width="3"/>
+  <circle cx="55" cy="320" r="11" class="pad"/><circle cx="55" cy="320" r="4" class="hole"/>
+  <circle cx="120" cy="320" r="11" class="pad"/><circle cx="120" cy="320" r="4" class="hole"/>
+  <text class="grid" x="83" y="306" style="fill:#ccc">4</text>
+  <line x1="55" y1="360" x2="120" y2="360" stroke="#9a7b2a" stroke-width="3"/>
+  <circle cx="55" cy="360" r="11" class="pad"/><circle cx="55" cy="360" r="4" class="hole"/>
+  <circle cx="120" cy="360" r="11" class="pad"/><circle cx="120" cy="360" r="4" class="hole"/>
+  <text class="grid" x="83" y="346" style="fill:#ccc">5</text>
+  <line x1="55" y1="400" x2="120" y2="400" stroke="#9a7b2a" stroke-width="3"/>
+  <circle cx="55" cy="400" r="11" class="pad"/><circle cx="55" cy="400" r="4" class="hole"/>
+  <circle cx="120" cy="400" r="11" class="pad"/><circle cx="120" cy="400" r="4" class="hole"/>
+  <text class="grid" x="83" y="386" style="fill:#ccc">6</text>
+  <line x1="55" y1="440" x2="120" y2="440" stroke="#9a7b2a" stroke-width="3"/>
+  <circle cx="55" cy="440" r="11" class="pad"/><circle cx="55" cy="440" r="4" class="hole"/>
+  <circle cx="120" cy="440" r="11" class="pad"/><circle cx="120" cy="440" r="4" class="hole"/>
+  <text class="grid" x="83" y="426" style="fill:#ccc">7</text>
+  <line x1="0" y1="280" x2="45" y2="280" stroke="#c00000" stroke-width="5"/>
+  <line x1="0" y1="320" x2="45" y2="320" stroke="#d4a000" stroke-width="5"/>
+  <line x1="0" y1="360" x2="45" y2="360" stroke="#888" stroke-width="5"/>
+  <text class="sub" x="40" y="134" style="fill:#fff">J1 SeaTalk cable</text>
+  <text class="tiny" x="40" y="148" style="fill:#ddd">to edge pads 3, 4, 5</text>
+  <circle cx="170" cy="200" r="13" class="pad"/><circle cx="170" cy="200" r="4" class="hole"/>
+  <circle cx="170" cy="440" r="13" class="pad"/><circle cx="170" cy="440" r="4" class="hole"/>
+  <rect x="198" y="188" width="24" height="24" class="pad"/><circle cx="210" cy="200" r="4" class="hole"/>
+  <rect x="198" y="228" width="24" height="24" class="pad"/><circle cx="210" cy="240" r="4" class="hole"/>
+  <rect x="198" y="268" width="24" height="24" class="pad"/><circle cx="210" cy="280" r="4" class="hole"/>
+  <rect x="198" y="308" width="24" height="24" class="pad"/><circle cx="210" cy="320" r="4" class="hole"/>
+  <rect x="198" y="348" width="24" height="24" class="pad"/><circle cx="210" cy="360" r="4" class="hole"/>
+  <rect x="198" y="388" width="24" height="24" class="pad"/><circle cx="210" cy="400" r="4" class="hole"/>
+  <rect x="198" y="428" width="24" height="24" class="pad"/><circle cx="210" cy="440" r="4" class="hole"/>
+  <rect x="238" y="188" width="24" height="24" class="pad"/><circle cx="250" cy="200" r="4" class="hole"/>
+  <rect x="238" y="228" width="24" height="24" class="pad"/><circle cx="250" cy="240" r="4" class="hole"/>
+  <rect x="238" y="268" width="24" height="24" class="pad"/><circle cx="250" cy="280" r="4" class="hole"/>
+  <rect x="238" y="308" width="24" height="24" class="pad"/><circle cx="250" cy="320" r="4" class="hole"/>
+  <rect x="238" y="348" width="24" height="24" class="pad"/><circle cx="250" cy="360" r="4" class="hole"/>
+  <rect x="238" y="388" width="24" height="24" class="pad"/><circle cx="250" cy="400" r="4" class="hole"/>
+  <rect x="238" y="428" width="24" height="24" class="pad"/><circle cx="250" cy="440" r="4" class="hole"/>
+  <rect x="278" y="188" width="24" height="24" class="pad"/><circle cx="290" cy="200" r="4" class="hole"/>
+  <rect x="278" y="228" width="24" height="24" class="pad"/><circle cx="290" cy="240" r="4" class="hole"/>
+  <rect x="278" y="268" width="24" height="24" class="pad"/><circle cx="290" cy="280" r="4" class="hole"/>
+  <rect x="278" y="308" width="24" height="24" class="pad"/><circle cx="290" cy="320" r="4" class="hole"/>
+  <rect x="278" y="348" width="24" height="24" class="pad"/><circle cx="290" cy="360" r="4" class="hole"/>
+  <rect x="278" y="388" width="24" height="24" class="pad"/><circle cx="290" cy="400" r="4" class="hole"/>
+  <rect x="278" y="428" width="24" height="24" class="pad"/><circle cx="290" cy="440" r="4" class="hole"/>
+  <rect x="318" y="188" width="24" height="24" class="pad"/><circle cx="330" cy="200" r="4" class="hole"/>
+  <rect x="318" y="228" width="24" height="24" class="pad"/><circle cx="330" cy="240" r="4" class="hole"/>
+  <rect x="318" y="268" width="24" height="24" class="pad"/><circle cx="330" cy="280" r="4" class="hole"/>
+  <rect x="318" y="308" width="24" height="24" class="pad"/><circle cx="330" cy="320" r="4" class="hole"/>
+  <rect x="318" y="348" width="24" height="24" class="pad"/><circle cx="330" cy="360" r="4" class="hole"/>
+  <rect x="318" y="388" width="24" height="24" class="pad"/><circle cx="330" cy="400" r="4" class="hole"/>
+  <rect x="318" y="428" width="24" height="24" class="pad"/><circle cx="330" cy="440" r="4" class="hole"/>
+  <rect x="358" y="188" width="24" height="24" class="pad"/><circle cx="370" cy="200" r="4" class="hole"/>
+  <rect x="358" y="228" width="24" height="24" class="pad"/><circle cx="370" cy="240" r="4" class="hole"/>
+  <rect x="358" y="268" width="24" height="24" class="pad"/><circle cx="370" cy="280" r="4" class="hole"/>
+  <rect x="358" y="308" width="24" height="24" class="pad"/><circle cx="370" cy="320" r="4" class="hole"/>
+  <rect x="358" y="348" width="24" height="24" class="pad"/><circle cx="370" cy="360" r="4" class="hole"/>
+  <rect x="358" y="388" width="24" height="24" class="pad"/><circle cx="370" cy="400" r="4" class="hole"/>
+  <rect x="358" y="428" width="24" height="24" class="pad"/><circle cx="370" cy="440" r="4" class="hole"/>
+  <rect x="398" y="188" width="24" height="24" class="pad"/><circle cx="410" cy="200" r="4" class="hole"/>
+  <rect x="398" y="228" width="24" height="24" class="pad"/><circle cx="410" cy="240" r="4" class="hole"/>
+  <rect x="398" y="268" width="24" height="24" class="pad"/><circle cx="410" cy="280" r="4" class="hole"/>
+  <rect x="398" y="308" width="24" height="24" class="pad"/><circle cx="410" cy="320" r="4" class="hole"/>
+  <rect x="398" y="348" width="24" height="24" class="pad"/><circle cx="410" cy="360" r="4" class="hole"/>
+  <rect x="398" y="388" width="24" height="24" class="pad"/><circle cx="410" cy="400" r="4" class="hole"/>
+  <rect x="398" y="428" width="24" height="24" class="pad"/><circle cx="410" cy="440" r="4" class="hole"/>
+  <rect x="438" y="188" width="24" height="24" class="pad"/><circle cx="450" cy="200" r="4" class="hole"/>
+  <rect x="438" y="228" width="24" height="24" class="pad"/><circle cx="450" cy="240" r="4" class="hole"/>
+  <rect x="438" y="268" width="24" height="24" class="pad"/><circle cx="450" cy="280" r="4" class="hole"/>
+  <rect x="438" y="308" width="24" height="24" class="pad"/><circle cx="450" cy="320" r="4" class="hole"/>
+  <rect x="438" y="348" width="24" height="24" class="pad"/><circle cx="450" cy="360" r="4" class="hole"/>
+  <rect x="438" y="388" width="24" height="24" class="pad"/><circle cx="450" cy="400" r="4" class="hole"/>
+  <rect x="438" y="428" width="24" height="24" class="pad"/><circle cx="450" cy="440" r="4" class="hole"/>
+  <rect x="478" y="188" width="24" height="24" class="pad"/><circle cx="490" cy="200" r="4" class="hole"/>
+  <rect x="478" y="228" width="24" height="24" class="pad"/><circle cx="490" cy="240" r="4" class="hole"/>
+  <rect x="478" y="268" width="24" height="24" class="pad"/><circle cx="490" cy="280" r="4" class="hole"/>
+  <rect x="478" y="308" width="24" height="24" class="pad"/><circle cx="490" cy="320" r="4" class="hole"/>
+  <rect x="478" y="348" width="24" height="24" class="pad"/><circle cx="490" cy="360" r="4" class="hole"/>
+  <rect x="478" y="388" width="24" height="24" class="pad"/><circle cx="490" cy="400" r="4" class="hole"/>
+  <rect x="478" y="428" width="24" height="24" class="pad"/><circle cx="490" cy="440" r="4" class="hole"/>
+  <rect x="518" y="188" width="24" height="24" class="pad"/><circle cx="530" cy="200" r="4" class="hole"/>
+  <rect x="518" y="228" width="24" height="24" class="pad"/><circle cx="530" cy="240" r="4" class="hole"/>
+  <rect x="518" y="268" width="24" height="24" class="pad"/><circle cx="530" cy="280" r="4" class="hole"/>
+  <rect x="518" y="308" width="24" height="24" class="pad"/><circle cx="530" cy="320" r="4" class="hole"/>
+  <rect x="518" y="348" width="24" height="24" class="pad"/><circle cx="530" cy="360" r="4" class="hole"/>
+  <rect x="518" y="388" width="24" height="24" class="pad"/><circle cx="530" cy="400" r="4" class="hole"/>
+  <rect x="518" y="428" width="24" height="24" class="pad"/><circle cx="530" cy="440" r="4" class="hole"/>
+  <rect x="558" y="188" width="24" height="24" class="pad"/><circle cx="570" cy="200" r="4" class="hole"/>
+  <rect x="558" y="228" width="24" height="24" class="pad"/><circle cx="570" cy="240" r="4" class="hole"/>
+  <rect x="558" y="268" width="24" height="24" class="pad"/><circle cx="570" cy="280" r="4" class="hole"/>
+  <rect x="558" y="308" width="24" height="24" class="pad"/><circle cx="570" cy="320" r="4" class="hole"/>
+  <rect x="558" y="348" width="24" height="24" class="pad"/><circle cx="570" cy="360" r="4" class="hole"/>
+  <rect x="558" y="388" width="24" height="24" class="pad"/><circle cx="570" cy="400" r="4" class="hole"/>
+  <rect x="558" y="428" width="24" height="24" class="pad"/><circle cx="570" cy="440" r="4" class="hole"/>
+  <rect x="598" y="188" width="24" height="24" class="pad"/><circle cx="610" cy="200" r="4" class="hole"/>
+  <rect x="598" y="228" width="24" height="24" class="pad"/><circle cx="610" cy="240" r="4" class="hole"/>
+  <rect x="598" y="268" width="24" height="24" class="pad"/><circle cx="610" cy="280" r="4" class="hole"/>
+  <rect x="598" y="308" width="24" height="24" class="pad"/><circle cx="610" cy="320" r="4" class="hole"/>
+  <rect x="598" y="348" width="24" height="24" class="pad"/><circle cx="610" cy="360" r="4" class="hole"/>
+  <rect x="598" y="388" width="24" height="24" class="pad"/><circle cx="610" cy="400" r="4" class="hole"/>
+  <rect x="598" y="428" width="24" height="24" class="pad"/><circle cx="610" cy="440" r="4" class="hole"/>
+  <rect x="638" y="188" width="24" height="24" class="pad"/><circle cx="650" cy="200" r="4" class="hole"/>
+  <rect x="638" y="228" width="24" height="24" class="pad"/><circle cx="650" cy="240" r="4" class="hole"/>
+  <rect x="638" y="268" width="24" height="24" class="pad"/><circle cx="650" cy="280" r="4" class="hole"/>
+  <rect x="638" y="308" width="24" height="24" class="pad"/><circle cx="650" cy="320" r="4" class="hole"/>
+  <rect x="638" y="348" width="24" height="24" class="pad"/><circle cx="650" cy="360" r="4" class="hole"/>
+  <rect x="638" y="388" width="24" height="24" class="pad"/><circle cx="650" cy="400" r="4" class="hole"/>
+  <rect x="638" y="428" width="24" height="24" class="pad"/><circle cx="650" cy="440" r="4" class="hole"/>
+  <rect x="678" y="188" width="24" height="24" class="pad"/><circle cx="690" cy="200" r="4" class="hole"/>
+  <rect x="678" y="228" width="24" height="24" class="pad"/><circle cx="690" cy="240" r="4" class="hole"/>
+  <rect x="678" y="268" width="24" height="24" class="pad"/><circle cx="690" cy="280" r="4" class="hole"/>
+  <rect x="678" y="308" width="24" height="24" class="pad"/><circle cx="690" cy="320" r="4" class="hole"/>
+  <rect x="678" y="348" width="24" height="24" class="pad"/><circle cx="690" cy="360" r="4" class="hole"/>
+  <rect x="678" y="388" width="24" height="24" class="pad"/><circle cx="690" cy="400" r="4" class="hole"/>
+  <rect x="678" y="428" width="24" height="24" class="pad"/><circle cx="690" cy="440" r="4" class="hole"/>
+  <rect x="718" y="188" width="24" height="24" class="pad"/><circle cx="730" cy="200" r="4" class="hole"/>
+  <rect x="718" y="228" width="24" height="24" class="pad"/><circle cx="730" cy="240" r="4" class="hole"/>
+  <rect x="718" y="268" width="24" height="24" class="pad"/><circle cx="730" cy="280" r="4" class="hole"/>
+  <rect x="718" y="308" width="24" height="24" class="pad"/><circle cx="730" cy="320" r="4" class="hole"/>
+  <rect x="718" y="348" width="24" height="24" class="pad"/><circle cx="730" cy="360" r="4" class="hole"/>
+  <rect x="718" y="388" width="24" height="24" class="pad"/><circle cx="730" cy="400" r="4" class="hole"/>
+  <rect x="718" y="428" width="24" height="24" class="pad"/><circle cx="730" cy="440" r="4" class="hole"/>
+  <rect x="758" y="188" width="24" height="24" class="pad"/><circle cx="770" cy="200" r="4" class="hole"/>
+  <rect x="758" y="228" width="24" height="24" class="pad"/><circle cx="770" cy="240" r="4" class="hole"/>
+  <rect x="758" y="268" width="24" height="24" class="pad"/><circle cx="770" cy="280" r="4" class="hole"/>
+  <rect x="758" y="308" width="24" height="24" class="pad"/><circle cx="770" cy="320" r="4" class="hole"/>
+  <rect x="758" y="348" width="24" height="24" class="pad"/><circle cx="770" cy="360" r="4" class="hole"/>
+  <rect x="758" y="388" width="24" height="24" class="pad"/><circle cx="770" cy="400" r="4" class="hole"/>
+  <rect x="758" y="428" width="24" height="24" class="pad"/><circle cx="770" cy="440" r="4" class="hole"/>
+  <rect x="798" y="188" width="24" height="24" class="pad"/><circle cx="810" cy="200" r="4" class="hole"/>
+  <rect x="798" y="228" width="24" height="24" class="pad"/><circle cx="810" cy="240" r="4" class="hole"/>
+  <rect x="798" y="268" width="24" height="24" class="pad"/><circle cx="810" cy="280" r="4" class="hole"/>
+  <rect x="798" y="308" width="24" height="24" class="pad"/><circle cx="810" cy="320" r="4" class="hole"/>
+  <rect x="798" y="348" width="24" height="24" class="pad"/><circle cx="810" cy="360" r="4" class="hole"/>
+  <rect x="798" y="388" width="24" height="24" class="pad"/><circle cx="810" cy="400" r="4" class="hole"/>
+  <rect x="798" y="428" width="24" height="24" class="pad"/><circle cx="810" cy="440" r="4" class="hole"/>
+  <rect x="838" y="188" width="24" height="24" class="pad"/><circle cx="850" cy="200" r="4" class="hole"/>
+  <rect x="838" y="228" width="24" height="24" class="pad"/><circle cx="850" cy="240" r="4" class="hole"/>
+  <rect x="838" y="268" width="24" height="24" class="pad"/><circle cx="850" cy="280" r="4" class="hole"/>
+  <rect x="838" y="308" width="24" height="24" class="pad"/><circle cx="850" cy="320" r="4" class="hole"/>
+  <rect x="838" y="348" width="24" height="24" class="pad"/><circle cx="850" cy="360" r="4" class="hole"/>
+  <rect x="838" y="388" width="24" height="24" class="pad"/><circle cx="850" cy="400" r="4" class="hole"/>
+  <rect x="838" y="428" width="24" height="24" class="pad"/><circle cx="850" cy="440" r="4" class="hole"/>
+  <rect x="878" y="188" width="24" height="24" class="pad"/><circle cx="890" cy="200" r="4" class="hole"/>
+  <rect x="878" y="228" width="24" height="24" class="pad"/><circle cx="890" cy="240" r="4" class="hole"/>
+  <rect x="878" y="268" width="24" height="24" class="pad"/><circle cx="890" cy="280" r="4" class="hole"/>
+  <rect x="878" y="308" width="24" height="24" class="pad"/><circle cx="890" cy="320" r="4" class="hole"/>
+  <rect x="878" y="348" width="24" height="24" class="pad"/><circle cx="890" cy="360" r="4" class="hole"/>
+  <rect x="878" y="388" width="24" height="24" class="pad"/><circle cx="890" cy="400" r="4" class="hole"/>
+  <rect x="878" y="428" width="24" height="24" class="pad"/><circle cx="890" cy="440" r="4" class="hole"/>
+  <circle cx="930" cy="200" r="13" class="pad"/><circle cx="930" cy="200" r="4" class="hole"/>
+  <circle cx="930" cy="440" r="13" class="pad"/><circle cx="930" cy="440" r="4" class="hole"/>
+  <text class="grid" x="166" y="472" style="fill:#ddd">A</text>
+  <text class="grid" x="206" y="472" style="fill:#ddd">B</text>
+  <text class="grid" x="246" y="472" style="fill:#ddd">C</text>
+  <text class="grid" x="286" y="472" style="fill:#ddd">D</text>
+  <text class="grid" x="326" y="472" style="fill:#ddd">E</text>
+  <text class="grid" x="366" y="472" style="fill:#ddd">F</text>
+  <text class="grid" x="406" y="472" style="fill:#ddd">G</text>
+  <text class="grid" x="446" y="472" style="fill:#ddd">H</text>
+  <text class="grid" x="486" y="472" style="fill:#ddd">I</text>
+  <text class="grid" x="526" y="472" style="fill:#ddd">J</text>
+  <text class="grid" x="566" y="472" style="fill:#ddd">K</text>
+  <text class="grid" x="606" y="472" style="fill:#ddd">L</text>
+  <text class="grid" x="646" y="472" style="fill:#ddd">M</text>
+  <text class="grid" x="686" y="472" style="fill:#ddd">N</text>
+  <text class="grid" x="726" y="472" style="fill:#ddd">O</text>
+  <text class="grid" x="766" y="472" style="fill:#ddd">P</text>
+  <text class="grid" x="806" y="472" style="fill:#ddd">Q</text>
+  <text class="grid" x="846" y="472" style="fill:#ddd">R</text>
+  <text class="grid" x="886" y="472" style="fill:#ddd">S</text>
+  <text class="grid" x="926" y="472" style="fill:#ddd">T</text>
+  <text class="tiny" x="158" y="178" style="fill:#ddd">3.3V</text>
+  <text class="tiny" x="918" y="178" style="fill:#ddd">3.3V</text>
+  <text class="tiny" x="158" y="488" style="fill:#ddd">GND</text>
+  <text class="tiny" x="918" y="488" style="fill:#ddd">GND</text>
+  <line x1="210" y1="280" x2="250" y2="280" stroke="#c00000" stroke-width="7" stroke-linecap="round" stroke-opacity="0.9"/>
+  <line x1="210" y1="320" x2="410" y2="320" stroke="#d4a000" stroke-width="7" stroke-linecap="round" stroke-opacity="0.9"/>
+  <line x1="410" y1="280" x2="410" y2="320" stroke="#d4a000" stroke-width="7" stroke-linecap="round" stroke-opacity="0.9"/>
+  <line x1="450" y1="280" x2="410" y2="280" stroke="#d4a000" stroke-width="7" stroke-linecap="round" stroke-opacity="0.9"/>
+  <line x1="410" y1="320" x2="410" y2="400" stroke="#d4a000" stroke-width="7" stroke-linecap="round" stroke-opacity="0.9"/>
+  <line x1="410" y1="400" x2="450" y2="400" stroke="#d4a000" stroke-width="7" stroke-linecap="round" stroke-opacity="0.9"/>
+  <line x1="210" y1="360" x2="210" y2="440" stroke="#2e7d32" stroke-width="7" stroke-linecap="round" stroke-opacity="0.9"/>
+  <line x1="170" y1="440" x2="930" y2="440" stroke="#2e7d32" stroke-width="7" stroke-linecap="round" stroke-opacity="0.9"/>
+  <line x1="530" y1="400" x2="530" y2="440" stroke="#2e7d32" stroke-width="7" stroke-linecap="round" stroke-opacity="0.9"/>
+  <line x1="690" y1="360" x2="690" y2="440" stroke="#2e7d32" stroke-width="7" stroke-linecap="round" stroke-opacity="0.9"/>
+  <line x1="690" y1="240" x2="850" y2="240" stroke="#2e7d32" stroke-width="7" stroke-linecap="round" stroke-opacity="0.9"/>
+  <line x1="850" y1="240" x2="850" y2="440" stroke="#2e7d32" stroke-width="7" stroke-linecap="round" stroke-opacity="0.9"/>
+  <line x1="810" y1="280" x2="810" y2="240" stroke="#2e7d32" stroke-width="7" stroke-linecap="round" stroke-opacity="0.9"/>
+  <line x1="490" y1="400" x2="490" y2="360" stroke="#e65100" stroke-width="7" stroke-linecap="round" stroke-opacity="0.9"/>
+  <line x1="490" y1="360" x2="490" y2="320" stroke="#e65100" stroke-width="7" stroke-linecap="round" stroke-opacity="0.9"/>
+  <line x1="490" y1="360" x2="530" y2="360" stroke="#e65100" stroke-width="7" stroke-linecap="round" stroke-opacity="0.9"/>
+  <line x1="610" y1="280" x2="650" y2="280" stroke="#00838f" stroke-width="7" stroke-linecap="round" stroke-opacity="0.9"/>
+  <line x1="650" y1="280" x2="650" y2="240" stroke="#00838f" stroke-width="7" stroke-linecap="round" stroke-opacity="0.9"/>
+  <line x1="610" y1="240" x2="610" y2="200" stroke="#c2185b" stroke-width="7" stroke-linecap="round" stroke-opacity="0.9"/>
+  <line x1="610" y1="240" x2="570" y2="240" stroke="#c2185b" stroke-width="7" stroke-linecap="round" stroke-opacity="0.9"/>
+  <line x1="170" y1="200" x2="450" y2="200" stroke="#7b1fa2" stroke-width="7" stroke-linecap="round" stroke-opacity="0.9"/>
+  <line x1="650" y1="320" x2="690" y2="320" stroke="#8d6e63" stroke-width="7" stroke-linecap="round" stroke-opacity="0.9"/>
+  <circle cx="250" cy="280" r="5" fill="#c00000" stroke="#000" stroke-width="0.8"/>
+  <circle cx="410" cy="280" r="5" fill="#d4a000" stroke="#000" stroke-width="0.8"/>
+  <circle cx="450" cy="280" r="5" fill="#d4a000" stroke="#000" stroke-width="0.8"/>
+  <circle cx="610" cy="280" r="5" fill="#00838f" stroke="#000" stroke-width="0.8"/>
+  <circle cx="650" cy="280" r="5" fill="#00838f" stroke="#000" stroke-width="0.8"/>
+  <circle cx="810" cy="280" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="450" cy="200" r="5" fill="#7b1fa2" stroke="#000" stroke-width="0.8"/>
+  <circle cx="610" cy="200" r="5" fill="#c2185b" stroke="#000" stroke-width="0.8"/>
+  <circle cx="490" cy="320" r="5" fill="#e65100" stroke="#000" stroke-width="0.8"/>
+  <circle cx="650" cy="320" r="5" fill="#8d6e63" stroke="#000" stroke-width="0.8"/>
+  <circle cx="530" cy="360" r="5" fill="#e65100" stroke="#000" stroke-width="0.8"/>
+  <circle cx="690" cy="360" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="450" cy="400" r="5" fill="#d4a000" stroke="#000" stroke-width="0.8"/>
+  <circle cx="490" cy="400" r="5" fill="#e65100" stroke="#000" stroke-width="0.8"/>
+  <circle cx="530" cy="400" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="610" cy="240" r="5" fill="#c2185b" stroke="#000" stroke-width="0.8"/>
+  <circle cx="650" cy="240" r="5" fill="#00838f" stroke="#000" stroke-width="0.8"/>
+  <circle cx="690" cy="240" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="210" cy="280" r="5" fill="#c00000" stroke="#000" stroke-width="0.8"/>
+  <circle cx="210" cy="320" r="5" fill="#d4a000" stroke="#000" stroke-width="0.8"/>
+  <circle cx="210" cy="360" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="570" cy="240" r="5" fill="#c2185b" stroke="#000" stroke-width="0.8"/>
+  <circle cx="690" cy="320" r="5" fill="#8d6e63" stroke="#000" stroke-width="0.8"/>
+  <circle cx="250" cy="320" r="5" fill="#d4a000" stroke="#000" stroke-width="0.8"/>
+  <circle cx="290" cy="320" r="5" fill="#d4a000" stroke="#000" stroke-width="0.8"/>
+  <circle cx="330" cy="320" r="5" fill="#d4a000" stroke="#000" stroke-width="0.8"/>
+  <circle cx="370" cy="320" r="5" fill="#d4a000" stroke="#000" stroke-width="0.8"/>
+  <circle cx="410" cy="320" r="5" fill="#d4a000" stroke="#000" stroke-width="0.8"/>
+  <circle cx="410" cy="360" r="5" fill="#d4a000" stroke="#000" stroke-width="0.8"/>
+  <circle cx="410" cy="400" r="5" fill="#d4a000" stroke="#000" stroke-width="0.8"/>
+  <circle cx="210" cy="400" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="210" cy="440" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="170" cy="440" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="250" cy="440" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="290" cy="440" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="330" cy="440" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="370" cy="440" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="410" cy="440" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="450" cy="440" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="490" cy="440" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="530" cy="440" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="570" cy="440" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="610" cy="440" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="650" cy="440" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="690" cy="440" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="730" cy="440" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="770" cy="440" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="810" cy="440" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="850" cy="440" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="890" cy="440" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="930" cy="440" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="690" cy="400" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="730" cy="240" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="770" cy="240" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="810" cy="240" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="850" cy="240" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="850" cy="280" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="850" cy="320" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="850" cy="360" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="850" cy="400" r="5" fill="#2e7d32" stroke="#000" stroke-width="0.8"/>
+  <circle cx="490" cy="360" r="5" fill="#e65100" stroke="#000" stroke-width="0.8"/>
+  <circle cx="170" cy="200" r="5" fill="#7b1fa2" stroke="#000" stroke-width="0.8"/>
+  <circle cx="210" cy="200" r="5" fill="#7b1fa2" stroke="#000" stroke-width="0.8"/>
+  <circle cx="250" cy="200" r="5" fill="#7b1fa2" stroke="#000" stroke-width="0.8"/>
+  <circle cx="290" cy="200" r="5" fill="#7b1fa2" stroke="#000" stroke-width="0.8"/>
+  <circle cx="330" cy="200" r="5" fill="#7b1fa2" stroke="#000" stroke-width="0.8"/>
+  <circle cx="370" cy="200" r="5" fill="#7b1fa2" stroke="#000" stroke-width="0.8"/>
+  <circle cx="410" cy="200" r="5" fill="#7b1fa2" stroke="#000" stroke-width="0.8"/>
+  <path d="M120,280 C145,264 185,264 210,280" fill="none" stroke="#c00000" stroke-width="3" stroke-dasharray="6,4"/>
+  <path d="M120,320 C145,304 185,304 210,320" fill="none" stroke="#d4a000" stroke-width="3" stroke-dasharray="6,4"/>
+  <path d="M120,360 C145,344 185,344 210,360" fill="none" stroke="#2e7d32" stroke-width="3" stroke-dasharray="6,4"/>
+  <line x1="250" y1="280" x2="410" y2="280" stroke="#777" stroke-width="2"/>
+  <rect class="body" x="274" y="271" width="112" height="18" rx="7" style="fill:#cfe3f7"/>
+  <text class="lbl" x="274" y="264" style="fill:#fff;font-weight:bold">R1 <tspan style="font-weight:normal">10 kΩ</tspan></text>
+  <line x1="450" y1="280" x2="610" y2="280" stroke="#777" stroke-width="2"/>
+  <rect class="body" x="474" y="271" width="112" height="18" rx="7" style="fill:#cfe3f7"/>
+  <text class="lbl" x="474" y="264" style="fill:#fff;font-weight:bold">R_b2 <tspan style="font-weight:normal">100 kΩ</tspan></text>
+  <line x1="650" y1="280" x2="810" y2="280" stroke="#777" stroke-width="2"/>
+  <rect class="body" x="674" y="271" width="112" height="18" rx="7" style="fill:#cfe3f7"/>
+  <text class="lbl" x="674" y="307" style="fill:#fff;font-weight:bold">R_pd2 <tspan style="font-weight:normal">22 kΩ</tspan></text>
+  <line x1="450" y1="200" x2="610" y2="200" stroke="#777" stroke-width="2"/>
+  <rect class="body" x="474" y="191" width="112" height="18" rx="7" style="fill:#cfe3f7"/>
+  <text class="lbl" x="474" y="184" style="fill:#fff;font-weight:bold">R_c <tspan style="font-weight:normal">10 kΩ</tspan></text>
+  <line x1="490" y1="320" x2="650" y2="320" stroke="#777" stroke-width="2"/>
+  <rect class="body" x="514" y="311" width="112" height="18" rx="7" style="fill:#cfe3f7"/>
+  <text class="lbl" x="514" y="304" style="fill:#fff;font-weight:bold">R_b1 <tspan style="font-weight:normal">2.2 kΩ</tspan></text>
+  <line x1="530" y1="360" x2="690" y2="360" stroke="#777" stroke-width="2"/>
+  <rect class="body" x="554" y="351" width="112" height="18" rx="7" style="fill:#cfe3f7"/>
+  <text class="lbl" x="554" y="344" style="fill:#fff;font-weight:bold">R_pd1 <tspan style="font-weight:normal">10 kΩ</tspan></text>
+  <path class="body" d="M435.0,388 L545.0,388 A55.0,41.25 0 0 1 435.0,388 Z" style="fill:#333;fill-opacity:0.75"/>
+  <text class="pin" x="446" y="422" style="fill:#fff">C</text>
+  <text class="pin" x="486" y="422" style="fill:#fff">B</text>
+  <text class="pin" x="526" y="422" style="fill:#fff">E</text>
+  <text class="lbl" x="551.0" y="405" style="fill:#fff;font-weight:bold">Q1 <tspan style="font-weight:normal">2N3904</tspan></text>
+  <path class="body" d="M595.0,228 L705.0,228 A55.0,41.25 0 0 1 595.0,228 Z" style="fill:#333;fill-opacity:0.75"/>
+  <text class="pin" x="606" y="262" style="fill:#fff">C</text>
+  <text class="pin" x="646" y="262" style="fill:#fff">B</text>
+  <text class="pin" x="686" y="262" style="fill:#fff">E</text>
+  <text class="lbl" x="711.0" y="222" style="fill:#fff;font-weight:bold">Q2 <tspan style="font-weight:normal">2N3904</tspan></text>
+  <path d="M570,240 C570,150 860,207 860,126" fill="none" stroke="#c2185b" stroke-width="3" stroke-dasharray="6,4"/>
+  <path d="M690,320 C690,230 910,207 910,126" fill="none" stroke="#8d6e63" stroke-width="3" stroke-dasharray="6,4"/>
+  <text class="lbl" x="30" y="525" style="font-weight:bold">Nets (bottom-side links; join every hole listed)</text>
+  <rect x="30" y="536" width="26" height="8" fill="#c00000"/>
+  <text class="sub" x="64" y="547"><tspan style="font-weight:bold">+12 V (SeaTalk red)</tspan>: B3–C3</text>
+  <rect x="30" y="555" width="26" height="8" fill="#d4a000"/>
+  <text class="sub" x="64" y="566"><tspan style="font-weight:bold">SeaTalk DATA (yellow)</tspan>: B4–G4, G3–G4, H3–G3, G4–G6, G6–H6</text>
+  <rect x="30" y="574" width="26" height="8" fill="#2e7d32"/>
+  <text class="sub" x="64" y="585"><tspan style="font-weight:bold">GND</tspan>: B5–B7, A7–T7, J6–J7, N5–N7, N2–R2, R2–R7, Q3–Q2</text>
+  <rect x="30" y="593" width="26" height="8" fill="#e65100"/>
+  <text class="sub" x="64" y="604"><tspan style="font-weight:bold">Q1 base</tspan>: I6–I5, I5–I4, I5–J5</text>
+  <rect x="30" y="612" width="26" height="8" fill="#00838f"/>
+  <text class="sub" x="64" y="623"><tspan style="font-weight:bold">Q2 base</tspan>: L3–M3, M3–M2</text>
+  <rect x="30" y="631" width="26" height="8" fill="#c2185b"/>
+  <text class="sub" x="64" y="642"><tspan style="font-weight:bold">RX out (GPIO27)</tspan>: L2–L1, L2–K2</text>
+  <rect x="30" y="650" width="26" height="8" fill="#7b1fa2"/>
+  <text class="sub" x="64" y="661"><tspan style="font-weight:bold">+3.3 V</tspan>: A1–H1</text>
+  <rect x="30" y="669" width="26" height="8" fill="#8d6e63"/>
+  <text class="sub" x="64" y="680"><tspan style="font-weight:bold">TX in (GPIO26)</tspan>: M4–N4</text>
+  <text class="lbl" x="30" y="715" style="font-weight:bold">Parts (top side, leads through these holes)</text>
+  <text class="sub" x="30" y="735" xml:space="preserve">R1 10 kΩ: C3, G3        R_b2 100 kΩ: H3, L3        R_pd2 22 kΩ (20 kΩ ok): M3, Q3</text>
+  <text class="sub" x="30" y="753" xml:space="preserve">R_c 10 kΩ: H1, L1        R_b1 2.2 kΩ: I4, M4        R_pd1 10 kΩ: J5, N5</text>
+  <text class="sub" x="30" y="771" xml:space="preserve">Q1 2N3904: C=H6 B=I6 E=J6        Q2 2N3904: C=L2 B=M2 E=N2   (flat face toward row 1 on both)</text>
+  <text class="sub" x="30" y="789" xml:space="preserve">Wires: edge pads 3/4/5 to B3/B4/B5 (dashed, insulated).  K2 to GPIO27.  N4 to GPIO26.</text>
+  <text class="tiny" x="30" y="821">Flat face toward row 1 means the round side faces the GND corner row. Seen from row 1 looking at the flat face: E-B-C left to right.</text>
+  <text class="tiny" x="30" y="836">H4 and H5 are left empty on purpose: they separate DATA (G4-G6) from the Q1 base net (I4-I6).</text>
+  <text class="tiny" x="30" y="851">Before power-up, with nothing connected, check: DATA to GND reads ~1 MΩ or more (not a few kΩ); 3.3 V to GND is not a short;</text>
+  <text class="tiny" x="30" y="866">GPIO27 (K2) to 3.3 V reads 10 kΩ; DATA (B4) to +12 V (B3) reads ~10 kΩ.  Then remove R_in and the old opto wiring from DATA.</text>
+</svg>

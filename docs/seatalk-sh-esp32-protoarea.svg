@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="940" height="620" viewBox="0 0 940 620" font-family="Helvetica,Arial,sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" width="940" height="640" viewBox="0 0 940 640" font-family="Helvetica,Arial,sans-serif">
   <style>
     .wire{stroke:#111;stroke-width:2;fill:none}
     .node{fill:#111}
@@ -11,7 +11,7 @@
     .railg{fill:#060}
   </style>
 
-  <text class="title" x="20" y="28">SeaTalk &#8596; SH-ESP32 proto-area subcircuit</text>
+  <text class="title" x="20" y="28">SeaTalk &#8596; SH-ESP32 proto-area subcircuit (opto version, superseded)</text>
   <text class="sub" x="20" y="48">Rev 2.1.0 opto block: ISO_IN=GPIO35 (RX), ISO_OUT=GPIO33 (TX), V_ISO=Vext. SeaTalk = one bidirectional 12V open-collector line, 4800-8S1.</text>
 
   <!-- ===================== RAILS ===================== -->
@@ -40,25 +40,22 @@
   <text class="sub" x="172" y="166">10 k&#8486;</text>
 
   <!-- ===================== RX LEG (upper lane, y=260) : DATA -> R_in -> ISO_IN ===================== -->
-  <text class="sub" x="300" y="246" font-size="12">RX leg</text>
+  <text class="sub" x="200" y="252" font-size="12">RX leg</text>
   <line class="wire" x1="150" y1="260" x2="300" y2="260"/>
   <rect class="box" x="300" y="245" width="60" height="30"/>
   <text class="lbl" x="312" y="238">R_in</text>
-  <text class="sub" x="366" y="258">2.2 k&#8486;</text>
+  <text class="sub" x="366" y="258">5.6 k&#8486; (was 2.2 k)</text>
   <line class="wire" x1="360" y1="260" x2="640" y2="260"/>
   <circle class="node" cx="640" cy="260" r="4"/>
 
   <!-- ===================== TX LEG (lower lane, y=360) : DATA -> D_out -> ISO_OUT ===================== -->
-  <text class="sub" x="300" y="346" font-size="12">TX leg</text>
-  <line class="wire" x1="150" y1="360" x2="305" y2="360"/>
+  <text class="sub" x="200" y="352" font-size="12">TX leg</text>
+  <!-- direct wire: ISO_OUT is already an open-collector NPN (Q901) with a 3.9k pull-up (R904) -->
+  <line class="wire" x1="150" y1="360" x2="640" y2="360"/>
   <circle class="node" cx="150" cy="360" r="4"/>
-  <!-- diode symbol pointing LEFT: current flows ISO_OUT -> DATA, cathode (bar) at DATA(left) -->
-  <polygon points="345,348 345,372 325,360" fill="#111"/>
-  <line class="wire" x1="325" y1="348" x2="325" y2="372"/>
-  <line class="wire" x1="345" y1="360" x2="640" y2="360"/>
   <circle class="node" cx="640" cy="360" r="4"/>
-  <text class="lbl" x="372" y="352">D_out 1N5817</text>
-  <text class="sub" x="372" y="340" font-size="11">cathode (band) &#8592; DATA side</text>
+  <text class="lbl" x="372" y="352">direct wire, no diode</text>
+  <text class="sub" x="372" y="380" font-size="11">(old D_out was backwards: it blocked TX)</text>
 
   <!-- ===================== V_ISO LEG (top lane, y=150) : +12V -> V_ISO ===================== -->
   <line class="wire" x1="500" y1="90" x2="500" y2="150"/>
@@ -85,8 +82,11 @@
   <text class="sub" x="650" y="272" font-size="11">= OPTO_IN / GPIO35 (RX)</text>
   <text class="pin" x="650" y="356">ISO_OUT</text>
   <text class="sub" x="650" y="372" font-size="11">= OPTO_OUT / GPIO33 (TX)</text>
+  <text class="sub" x="650" y="388" font-size="11">Q901 collector, 3.9k to V_ISO</text>
   <text class="pin" x="650" y="456">ISO_GND</text>
 
   <!-- ===================== FOOTER ===================== -->
-  <text class="sub" x="20" y="608">RX: DATA low pulses &#8594; ISO_IN &#8594; GPIO35.  TX: GPIO33 HIGH &#8594; ISO_OUT pulls DATA low via D_out (open-collector); R_pull restores 12 V.  ISO_IN and ISO_OUT are SEPARATE legs that meet only at the DATA node. Keep SoftwareSerial invert=true.</text>
+  <text class="sub" x="20" y="604">RX: DATA low -&gt; ISO_IN LED off -&gt; GPIO35 low.  TX: GPIO33 LOW -&gt; Q901 on -&gt; DATA pulled low; HIGH -&gt; released.</text>
+  <text class="sub" x="20" y="619">Both stages non-inverting: SoftwareSerial invert=false.  RX leg draws ~1.4 mA, so DATA idles near 9 V.</text>
+  <text class="sub" x="20" y="634">Corrected from the Hat Labs Rev 2.0.0 schematic. Current build: seatalk-sh-esp32-npn.svg.</text>
 </svg>
