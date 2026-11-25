@@ -227,7 +227,7 @@ void SeaTalk::txHoldLoop()
 // ════════════════════════════════════════════════════════════════════════════
 
 #define ST_KEY_DELAY 300      // AK KEY_DELAY: 300 ms break between keys
-#define ST_ECHO_WAIT_US 3000  // AK waits delay(3) after each byte for its echo
+#define ST_ECHO_WAIT_US 20000 // AK waits delay(3); diagnostic: wait up to 20 ms and log how long it took
 
 /// @brief Equivalent of AK's 9-bit Serial1.read(): byte | 0x100 for a command byte.
 int SeaTalk::read9()
@@ -260,10 +260,19 @@ bool SeaTalk::sendDatagram(const uint8_t data[], int size)
     int i = 0;
     int want = 0, got = 0;                           // last compared byte, for the log
     while (j < 5) {                                  // CSMA/CD, 5 tries
+        int drained = 0;
+        char drainStr[40] = "";
+        int dpos = 0;
         while (_mySerial.available()) {              // wait for silence on the bus
-            _mySerial.read();
-            optoRxEdges++;
+            int b = read9();
+            if (drained < 6 && dpos < (int)sizeof(drainStr) - 5)
+                dpos += snprintf(drainStr + dpos, sizeof(drainStr) - dpos, "%03X ", b);
+            drained++;
             delay(3);
+        }
+        if (seatalkDebugTx && drained) {
+            snprintf(logbuf, LOGBUF_SIZE, "ST TX diag: drained %d byte(s) before try %d: %s", drained, j + 1, drainStr);
+            log::toAll(logbuf);
         }
 
         bool ok = true;
@@ -275,9 +284,16 @@ bool SeaTalk::sendDatagram(const uint8_t data[], int size)
             // 3 ms would leave a gap; wait only until the echo has been decoded.
             unsigned long t0 = micros();
             while (!_mySerial.available() && micros() - t0 < ST_ECHO_WAIT_US) {}
+            unsigned long echoUs = micros() - t0;
+            bool ovf = _mySerial.overflow();
             int inbyte = read9();
             want = outbyte;
             got = inbyte;
+            if (seatalkDebugTx) {
+                snprintf(logbuf, LOGBUF_SIZE, "ST TX diag: byte %d sent %03X, echo %s after %lu us%s",
+                         i, outbyte, inbyte < 0 ? "none" : "arrived", echoUs, ovf ? " (rx overflow flag set)" : "");
+                log::toAll(logbuf);
+            }
             if (inbyte < 0) ok = false;              // nothing received
             else if (inbyte != outbyte) ok = false;  // not what we sent: collision
         }
