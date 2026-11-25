@@ -238,6 +238,38 @@ void SeaTalk::loopbackTest(unsigned long halfUs)
     log::toAll(logbuf);
 }
 
+/// @brief Time each direction of the TX -> DATA -> RX path separately.
+void SeaTalk::stepTest()
+{
+    if (_txHolding) {
+        log::toAll("ST step: txhold in progress");
+        return;
+    }
+    const unsigned long maxUs = 500000;
+    digitalWrite(TX_OUT, LOW);                    // start from idle
+    delay(50);
+    int before1 = digitalRead(RX_IN);
+    unsigned long t0 = micros();
+    digitalWrite(TX_OUT, HIGH);                   // Q1 on, DATA should fall, RX_IN should go HIGH
+    while (digitalRead(RX_IN) != HIGH && micros() - t0 < maxUs) {}
+    unsigned long downUs = micros() - t0;
+    bool downOk = digitalRead(RX_IN) == HIGH;
+    delay(20);
+    int before2 = digitalRead(RX_IN);
+    t0 = micros();
+    digitalWrite(TX_OUT, LOW);                    // Q1 off, DATA should rise, RX_IN should go LOW
+    while (digitalRead(RX_IN) != LOW && micros() - t0 < maxUs) {}
+    unsigned long upUs = micros() - t0;
+    bool upOk = digitalRead(RX_IN) == LOW;
+    delay(2);
+    while (_mySerial.available()) { _mySerial.read(); optoRxEdges++; }
+    snprintf(logbuf, LOGBUF_SIZE,
+             "ST step: TX HIGH (DATA pull-down): RX_IN %d->HIGH %s %lu us | TX LOW (DATA release): RX_IN %d->LOW %s %lu us",
+             before1, downOk ? "after" : "NOT within", downUs,
+             before2, upOk ? "after" : "NOT within", upUs);
+    log::toAll(logbuf);
+}
+
 /// @brief Sample RX_IN partway through a hold, and release TX_OUT when time is up.
 void SeaTalk::txHoldLoop()
 {

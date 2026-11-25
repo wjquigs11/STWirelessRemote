@@ -75,6 +75,9 @@ public:
     // and check that RX_IN follows (both stages invert, so RX_IN == TX_OUT).
     // Logs matches and the worst response delay. Blocks for ~40 half-periods.
     void loopbackTest(unsigned long halfUs = 208);
+    // Diagnostic: one step each way. TX_OUT HIGH -> time until RX_IN HIGH (DATA pulled
+    // low), then TX_OUT LOW -> time until RX_IN LOW (DATA released). Up to 500 ms each.
+    void stepTest();
 
 private:
     SoftwareSerial _mySerial;
