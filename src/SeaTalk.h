@@ -30,16 +30,18 @@ class SeaTalk
 public:
     SeaTalk(SignalManager *signalManager);
 
-    // Keystroke datagrams (Knauf command 86). The second byte is X1: X=1 is the
-    // Z101 remote-control format, which the ST2000+ obeys (signalk-seatalk1-autopilot
-    // marks these "tested ok on ST2000+"). X=2 (0x21) is the ST4000+/ST600R control
-    // head format; only Wind uses it, as in that plugin.
-    const uint8_t ST_Minus_1[4] = {0x86, 0x11, 0x05, 0xFA};
-    const uint8_t ST_Minus_10[4] = {0x86, 0x11, 0x06, 0xF9};
-    const uint8_t ST_Plus_1[4] = {0x86, 0x11, 0x07, 0xF8};
-    const uint8_t ST_Plus_10[4] = {0x86, 0x11, 0x08, 0xF7};
-    const uint8_t ST_Auto[4] = {0x86, 0x11, 0x01, 0xFE};
-    const uint8_t ST_Standby[4] = {0x86, 0x11, 0x02, 0xFD};
+    // homburg branch: datagrams exactly as in AK-Homberger's
+    // ArduinoPilotMicro433WindNG.ino (keystrokes use 86 21, the X=2 format).
+    const uint8_t ST_NMEA_BridgeID[3] = {0x90, 0x00, 0xA3};
+    const uint8_t ST_Minus_1[4] = {0x86, 0x21, 0x05, 0xFA};
+    const uint8_t ST_Minus_10[4] = {0x86, 0x21, 0x06, 0xF9};
+    const uint8_t ST_Plus_1[4] = {0x86, 0x21, 0x07, 0xF8};
+    const uint8_t ST_Plus_10[4] = {0x86, 0x21, 0x08, 0xF7};
+    const uint8_t ST_Auto[4] = {0x86, 0x21, 0x01, 0xFE};
+    const uint8_t ST_Standby[4] = {0x86, 0x21, 0x02, 0xFD};
+    const uint8_t ST_BeepOn[6] = {0xA8, 0x53, 0x80, 0x00, 0x00, 0xD3};
+    const uint8_t ST_BeepOff[6] = {0xA8, 0x43, 0x80, 0x00, 0x00, 0xC3};
+    // not in AK's sketch, kept so the existing commands still work
     const uint8_t ST_Wind[4] = {0x86, 0x21, 0x23, 0xDC};
     const uint8_t ST_TimerStart[5] = {0x59, 0x22, 0x00, 0x05, 0x80};
     void processMessages();
@@ -78,10 +80,21 @@ private:
     unsigned long _txHoldMs = 0;
     int _txHoldRx = -1;                // RX_IN level sampled during the hold
 
-    int checkBus();
+    // AK-Homberger port state (his globals)
+    bool _started = false;
+    unsigned long _keyTime = 0;        // key_time: last key accepted
+    unsigned long _beepTime = 0;       // beep_time: when the beep started
+    bool _beepStatus = false;          // beep_status
+    unsigned long _beepTimer2 = 0;     // beep_timer2: periodic beep-off
+    unsigned long _bridgeTimer = 0;    // bridge_timer: periodic bridge ID
+
     void txHoldLoop();
-    void checkClearToWrite();
-    bool send2ST(const uint8_t cmd[], int bytes);
+    int read9();                                   // Serial1.read() of a 9-bit byte, -1 if none
+    int checkWind();                               // AK checkWind()
+    bool sendDatagram(const uint8_t data[], int size);   // AK sendDatagram()
+    void beepOn();                                 // AK BeepOn()
+    void beepOff();                                // AK BeepOff()
+    bool send2ST(const uint8_t cmd[], int bytes);  // kept for existing callers
 };
 
 #endif

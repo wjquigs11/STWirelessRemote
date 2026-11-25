@@ -155,11 +155,28 @@ void SeaTalk::optoProbe(unsigned long durationMs)
     log::toAll(logbuf);
 }
 
-/// @brief Method to run messages
+/// @brief Main-loop work. Mirrors AK-Homberger's loop(): periodic beep-off and
+/// bridge ID, receive wind, end a running beep. (Keys arrive via sendCommand().)
 void SeaTalk::processMessages()
 {
     txHoldLoop();
-    checkBus();
+    unsigned long now = millis();
+
+    if (!_started) {                 // AK setup(): send bridge ID once at start
+        _started = true;
+        _beepTimer2 = _bridgeTimer = now;
+        sendDatagram(ST_NMEA_BridgeID, sizeof(ST_NMEA_BridgeID));
+    }
+    if (now - _beepTimer2 > 3000) {  // additional beep off every 3 s, avoids a constant alarm
+        sendDatagram(ST_BeepOff, sizeof(ST_BeepOff));
+        _beepTimer2 = now;
+    }
+    if (now - _bridgeTimer > 10000) {   // bridge ID every 10 s
+        sendDatagram(ST_NMEA_BridgeID, sizeof(ST_NMEA_BridgeID));
+        _bridgeTimer = now;
+    }
+    checkWind();
+    beepOff();
 }
 
 /// @brief Start a TX hold: drive TX_OUT HIGH so Q1 pulls DATA low, for metering.
@@ -203,189 +220,176 @@ void SeaTalk::txHoldLoop()
     log::toAll(logbuf);
 }
 
-/// @brief Checks the seatalk bus for messages
-/// @return if valid
-int SeaTalk::checkBus()
+// ════════════════════════════════════════════════════════════════════════════
+// Port of AK-Homberger's ArduinoPilotMicro433WindNG.ino (Seatalk-Autopilot-Remote-
+// Control). His sketch uses a 9-bit hardware Serial1 on a Pro Micro; here the 9th
+// (command) bit is EspSoftwareSerial's parity bit, MARK = command byte.
+// ════════════════════════════════════════════════════════════════════════════
+
+#define ST_KEY_DELAY 300      // AK KEY_DELAY: 300 ms break between keys
+#define ST_ECHO_WAIT_US 3000  // AK waits delay(3) after each byte for its echo
+
+/// @brief Equivalent of AK's 9-bit Serial1.read(): byte | 0x100 for a command byte.
+int SeaTalk::read9()
 {
-    static std::vector<uint8_t> message;
+    if (!_mySerial.available()) return -1;
+    int b = _mySerial.read();
+    bool cmdBit = _mySerial.readParity();
+    optoRxEdges++;
+    return b | (cmdBit ? 0x100 : 0);
+}
 
-    while (_mySerial.available())
-    {
-        uint8_t inByte = _mySerial.read();
-        bool parity = _mySerial.readParity();
-        optoRxEdges++;
+/// @brief AK sendDatagram(): wait for silence, write each byte and check its echo,
+/// stop at the first mismatch (collision), up to 5 tries with a random back-off.
+/// Length comes from the attribute nibble, as in AK's code.
+bool SeaTalk::sendDatagram(const uint8_t data[], int size)
+{
+    if (_txHolding) {
+        log::toAll("ST TX skipped: txhold in progress");
+        return false;
+    }
+    int bytes = (data[1] & 0x0f) + 3;   // message length is minimum 3, extra bytes in the attribute nibble
+    if (bytes > size) {
+        snprintf(logbuf, LOGBUF_SIZE, "ST TX: datagram 0x%02X says %d bytes but has %d, not sent",
+                 data[0], bytes, size);
+        log::toAll(logbuf);
+        return false;
+    }
 
-        if (parity) // Command byte received
-        {
-            message.clear();
-            message.push_back(inByte);
+    int j = 0;
+    int i = 0;
+    while (j < 5) {                                  // CSMA/CD, 5 tries
+        while (_mySerial.available()) {              // wait for silence on the bus
+            _mySerial.read();
+            optoRxEdges++;
+            delay(3);
         }
-        else if (!message.empty()) // Data byte received
-        {
-            message.push_back(inByte);
 
-            // Process messages
-            // Apparent Wind Angle
-            if (message[0] == 0x10 && message.size() == 4)
-            {
-                stRxPackets++;
-                double apparentWindAngle = ((message[2] << 8) | (message[3])) / 2.0;
-                if (seatalkDebugRx) {
-                    snprintf(logbuf, LOGBUF_SIZE, "ST RX: Apparent Wind Angle: %.1f degrees", apparentWindAngle);
-                    log::toAll(logbuf);
-                }
-                _signalManager->UpdateApparentWindAngle(apparentWindAngle);
-            }
-            // Apparent Wind Speed
-            else if (message[0] == 0x11 && message.size() == 4)
-            {
-                stRxPackets++;
-                double apparentWindSpeed = ((message[2] & 0x7f) + (message[3] & 0x0f) / 10.0);
-                if (seatalkDebugRx) {
-                    snprintf(logbuf, LOGBUF_SIZE, "ST RX: Apparent Wind Speed: %.1f knots", apparentWindSpeed);
-                    log::toAll(logbuf);
-                }
-                _signalManager->UpdateApparentWindSpeed(apparentWindSpeed);
-            }
-            // Speed Through Water
-            else if (message[0] == 0x20 && message.size() == 4)
-            {
-                stRxPackets++;
-                double speedThroughWater = ((message[3] << 8) | message[2]) / 10;
-                if (seatalkDebugRx) {
-                    snprintf(logbuf, LOGBUF_SIZE, "ST RX: Speed Through Water: %.1f knots", speedThroughWater);
-                    log::toAll(logbuf);
-                }
-                _signalManager->UpdateSpeedThroughWater(speedThroughWater);
-            }
-            // Speed Over Ground
-            else if (message[0] == 0x52 && message.size() == 4)
-            {
-                stRxPackets++;
-                double speedOverGround = ((message[3] << 8) | message[2]) / 10;
-                if (seatalkDebugRx) {
-                    snprintf(logbuf, LOGBUF_SIZE, "ST RX: Speed Over Ground: %.1f knots", speedOverGround);
-                    log::toAll(logbuf);
-                }
-                _signalManager->UpdateSpeedOverGround(speedOverGround);
-            }
-            // Course Over Ground
-            else if (message[0] == 0x53 && message.size() == 4)
-            {
-                stRxPackets++;
-                uint8_t u = (message[1] & 0xf0) >> 4;
-                uint8_t vw = message[2];
-                double courseOverGround = (u & 0x3) * 90 + (vw & 0x3F) * 2 + ((u & 0xC) >> 2) / 2;
-                if (seatalkDebugRx) {
-                    snprintf(logbuf, LOGBUF_SIZE, "ST RX: Course Over Ground: %.1f degrees", courseOverGround);
-                    log::toAll(logbuf);
-                }
-                _signalManager->UpdateCourseOverGround(courseOverGround);
-            }
-            // Depth Below Transducer
-            else if (message[0] == 0x00 && message.size() == 5)
-            {
-                stRxPackets++;
-                double depthBelowTransducer = (((message[4] >> 8) | message[3]) / 10);
-                if (seatalkDebugRx) {
-                    snprintf(logbuf, LOGBUF_SIZE, "ST RX: Depth Below Transducer %.1f Meters", depthBelowTransducer);
-                    log::toAll(logbuf);
-                }
-            }
-            // Auto Pilot Data
-            else if (message[0] == 0x84 && message.size() == 9)
-            {
-                stRxPackets++;
-                uint8_t u = (message[1] & 0xf0) >> 4;
-                uint8_t vw = message[2];
+        bool ok = true;
+        digitalWrite(LED_PIN, HIGH);
+        for (i = 0; (i < bytes) && ok; i++) {        // write and listen to detect collisions
+            int outbyte = data[i] | (i == 0 ? 0x100 : 0);
+            _mySerial.write(data[i], i == 0 ? SWSERIAL_PARITY_MARK : SWSERIAL_PARITY_SPACE);
+            // AK: delay(3) then check. Our write() blocks for the whole byte, so a fixed
+            // 3 ms would leave a gap; wait only until the echo has been decoded.
+            unsigned long t0 = micros();
+            while (!_mySerial.available() && micros() - t0 < ST_ECHO_WAIT_US) {}
+            int inbyte = read9();
+            if (inbyte < 0) ok = false;              // nothing received
+            else if (inbyte != outbyte) ok = false;  // not what we sent: collision
+        }
+        digitalWrite(LED_PIN, LOW);
 
-                AutoPilotData pilotData;
-                pilotData.compassHeading = (u & 0x3) * 90 + (vw & 0x3F) * 2 + (u & 0xC ? (u & 0xC == 0xC ? 2 : 1) : 0);
-                if (pilotData.compassHeading >= 360.0) pilotData.compassHeading -= 360.0;
-                if (seatalkDebugRx) {
-                    snprintf(logbuf, LOGBUF_SIZE, "ST RX: Auto Compass heading %.1f Degrees", pilotData.compassHeading);
-                    log::toAll(logbuf);
-                }
-                _signalManager->UpdateCompassHeading(pilotData.compassHeading);
-
-                // Transmit heading on N2K bus if enabled
-#ifdef N2K
-                n2kSendHeading(pilotData.compassHeading);
-#endif
-
-                uint8_t dir = (u & 0x80) >> 3;
-                if (dir == 1)
-                    pilotData.turningDirection = TurningDirection::port;
-                else
-                    pilotData.turningDirection = TurningDirection::starboard;
-
-                uint8_t v = (message[2] & 0xc0) >> 6;
-                uint8_t xy = message[3];
-                pilotData.autoPilotCourse = (v * 90) + (xy / 2);
-                if (seatalkDebugRx) {
-                    snprintf(logbuf, LOGBUF_SIZE, "ST RX: Auto Pilot Course= %.1f Degrees", pilotData.autoPilotCourse);
-                    log::toAll(logbuf);
-                }
-
-                uint8_t z = message[4];
-                if (z & 0x2 == 0)
-                    pilotData.autoPilotMode = standby;
-                else if (z & 0x2 == 2)
-                    pilotData.autoPilotMode = autom;
-                else if (z & 0x2 == 4)
-                    pilotData.autoPilotMode = vane;
-                else if (z & 0x8 == 8)
-                    pilotData.autoPilotMode = track;
+        if (ok) {
+            stTxPackets++;
+            if (seatalkDebugTx) {
+                snprintf(logbuf, LOGBUF_SIZE, "ST TX OK: %02X %02X ... (%d bytes) try %d",
+                         data[0], data[1], bytes, j + 1);
+                log::toAll(logbuf);
             }
-            // Nauti-Control Echo Command
-            else if (message[0] == 0xAC)
-            {
-                stRxPackets++;
-                if (message[1] == 0x0)
-                {
-                    uint8_t testNumber = message[3];
-                    uint8_t responsemessage[] = {0xAC, 0x01, 0x00, testNumber};
-                    send2ST(responsemessage, 4);
+            return true;
+        }
+        j++;                                         // collision detected
+        if (seatalkDebugTx) {
+            snprintf(logbuf, LOGBUF_SIZE, "ST TX collision: %02X at byte %d, try %d", data[0], i - 1, j);
+            log::toAll(logbuf);
+        }
+        delay(random(2, 50));                        // random wait for next try
+    }
+    stTxFails++;
+    snprintf(logbuf, LOGBUF_SIZE, "ST TX: Send Error (%02X %02X ...)", data[0], data[1]);
+    log::toAll(logbuf);                              // AK: Display("Send Error")
+    return false;
+}
+
+/// @brief Kept for existing callers (wind, compass, timer).
+bool SeaTalk::send2ST(const uint8_t cmd[], int bytes)
+{
+    return sendDatagram(cmd, bytes);
+}
+
+/// @brief AK checkWind(): receive apparent wind speed (11 01 XX 0Y) from the bus.
+/// Reads one byte per call and discards anything else, as in AK's sketch.
+int SeaTalk::checkWind()
+{
+    int wind = -1;
+    if (_mySerial.available()) {
+        int inbyte = read9();
+        if (inbyte == 0x111) {          // AWS SeaTalk command, see Thomas Knauf
+            delay(3);
+            inbyte = read9();
+            if (inbyte == 0x01) {
+                delay(3);
+                int xx = read9();
+                delay(3);
+                int y = read9();
+                wind = (xx & 0x7f) + (y / 10);   // wind speed
+                if (wind < 100) {                // greater than 100 must be a receive error
+                    stRxPackets++;
+                    if (seatalkDebugRx) {
+                        snprintf(logbuf, LOGBUF_SIZE, "ST RX: AWS %d kn", wind);
+                        log::toAll(logbuf);
+                    }
+                    _signalManager->UpdateApparentWindSpeed(wind);
                 }
             }
         }
     }
-
-    return -1;
+    return wind;
 }
 
-/// @brief Send Command To Seatalk Bus
-/// @param cmd Command to send
+/// @brief AK BeepOn(): SeaTalk alarm on, so instruments beep when a key is sent.
+void SeaTalk::beepOn()
+{
+    if (_beepStatus) return;            // already on
+    sendDatagram(ST_BeepOn, sizeof(ST_BeepOn));
+    _beepTime = millis();
+    _beepStatus = true;
+}
+
+/// @brief AK BeepOff(): alarm off after BEEP_DURATION.
+void SeaTalk::beepOff()
+{
+    if (_beepStatus && millis() - _beepTime > BEEP_DURATION) {
+        sendDatagram(ST_BeepOff, sizeof(ST_BeepOff));
+        _beepStatus = false;
+    }
+}
+
+/// @brief Key handling from AK's loop(): at most one key per KEY_DELAY, send the
+/// datagram, then beep.
 void SeaTalk::sendCommand(commands cmd)
 {
-    snprintf(logbuf, LOGBUF_SIZE, "%d", cmd);
-    log::toAll(logbuf);
-    if (cmd == minus_1) {
-        send2ST(ST_Minus_1, 4);
-    } else if (cmd == plus_1) {
-        send2ST(ST_Plus_1, 4);
-    } else if (cmd == minus_10) {
-        send2ST(ST_Minus_10, 4);
-    } else if (cmd == plus_10) {
-        send2ST(ST_Plus_10, 4);
-    } else if (cmd == auto_but) {
-        send2ST(ST_Auto, 4);
-    } else if (cmd == standby_but) {
-        send2ST(ST_Standby, 4);
-    } else if (cmd == start_timer) {
-        send2ST(ST_TimerStart, 5);
-    } else if (cmd == wind_mode) {
-        send2ST(ST_Wind, 4);
-    } else if (cmd == tack_port) {
-        send2ST(ST_Minus_1, 4);
-        send2ST(ST_Minus_10, 4);
-    } else if (cmd == tack_starboard) {
-        send2ST(ST_Plus_1, 4);
-        send2ST(ST_Plus_10, 4);
+    if (millis() - _keyTime < ST_KEY_DELAY) {
+        log::toAll("ST: key ignored (less than 300 ms after the last one)");
+        return;
     }
+    _keyTime = millis();
+
+    switch (cmd) {
+    case minus_1:     sendDatagram(ST_Minus_1, sizeof(ST_Minus_1)); break;
+    case plus_1:      sendDatagram(ST_Plus_1, sizeof(ST_Plus_1)); break;
+    case minus_10:    sendDatagram(ST_Minus_10, sizeof(ST_Minus_10)); break;
+    case plus_10:     sendDatagram(ST_Plus_10, sizeof(ST_Plus_10)); break;
+    case auto_but:    sendDatagram(ST_Auto, sizeof(ST_Auto)); break;
+    case standby_but: sendDatagram(ST_Standby, sizeof(ST_Standby)); break;
+    // not in AK's sketch:
+    case start_timer: sendDatagram(ST_TimerStart, sizeof(ST_TimerStart)); break;
+    case wind_mode:   sendDatagram(ST_Wind, sizeof(ST_Wind)); break;
+    case tack_port:
+        sendDatagram(ST_Minus_1, sizeof(ST_Minus_1));
+        sendDatagram(ST_Minus_10, sizeof(ST_Minus_10));
+        break;
+    case tack_starboard:
+        sendDatagram(ST_Plus_1, sizeof(ST_Plus_1));
+        sendDatagram(ST_Plus_10, sizeof(ST_Plus_10));
+        break;
+    default: return;
+    }
+    beepOn();
 }
 
-/// @brief Send compass heading to Seatalk
+/// @brief Send compass heading to SeaTalk (not in AK's sketch).
 void SeaTalk::sendCompass(float heading)
 {
     uint16_t headingTenths = heading * 10;
@@ -398,8 +402,7 @@ void SeaTalk::sendCompass(float heading)
     send2ST(message, sizeof(message));
 }
 
-/// @brief Send apparent wind angle to SeaTalk bus
-/// @param angle Wind angle in degrees
+/// @brief Send apparent wind angle to SeaTalk bus (not in AK's sketch).
 void SeaTalk::sendApparentWindAngle(double angle)
 {
     uint16_t encodedAngle = (uint16_t)(angle * 2.0);
@@ -407,123 +410,11 @@ void SeaTalk::sendApparentWindAngle(double angle)
     send2ST(message, 4);
 }
 
-/// @brief Send apparent wind speed to SeaTalk bus
-/// @param speedKnots Wind speed in knots
+/// @brief Send apparent wind speed to SeaTalk bus (not in AK's sketch).
 void SeaTalk::sendApparentWindSpeed(double speedKnots)
 {
     uint8_t speedInt = (uint8_t)speedKnots;
     uint8_t speedDec = (uint8_t)((speedKnots - speedInt) * 10);
     uint8_t message[] = {0x11, 0x01, (uint8_t)(speedInt & 0x7F), (uint8_t)(speedDec & 0x0F)};
     send2ST(message, 4);
-}
-
-/// @brief Send to seatalk Bus (blind send, no echo check)
-/// Transmits all bytes, then checks for unexpected bus traffic that may indicate
-/// another device was transmitting simultaneously.
-/// @param cmd cmd
-/// @param bytes length
-/// @return did send
-bool SeaTalk::send2ST(const uint8_t cmd[], int bytes)
-{
-    int attempt = 0;
-    const int maxRetries = 5;
-
-    if (_txHolding) {
-        log::toAll("ST TX skipped: txhold in progress");
-        return false;
-    }
-
-    if (seatalkDebugTx) {
-        snprintf(logbuf, LOGBUF_SIZE, "ST TX: cmd=0x%02X len=%d [%02X %02X %02X %02X]",
-            cmd[0], bytes, cmd[0], cmd[1], bytes > 2 ? cmd[2] : 0, bytes > 3 ? cmd[3] : 0);
-        log::toAll(logbuf);
-    }
-
-    while (attempt < maxRetries)
-    {
-        checkClearToWrite();
-        digitalWrite(LED_PIN, HIGH);
-
-        // Transmit all bytes back to back. SoftwareSerial write() blocks for the
-        // whole byte (~2.3 ms at 4800 baud), so no extra delay: a gap longer than
-        // 10 bit times (~2.1 ms) tells other devices the bus is free, and they may
-        // start talking in the middle of this datagram.
-        for (int i = 0; i < bytes; i++)
-        {
-            (i == 0) ? _mySerial.write(cmd[i], SWSERIAL_PARITY_MARK) : _mySerial.write(cmd[i], SWSERIAL_PARITY_SPACE);
-        }
-
-        // Read back the echo. TX and RX share the DATA line, so every byte we send
-        // is received too (as in AK-Homberger's remote). Compare byte and command
-        // bit; a mismatch means a collision or a bad line, so back off and retry.
-        delay(5);   // let the last stop bit be detected
-        uint8_t echo[MAX_BUF_SIZE];
-        bool echoCmd[MAX_BUF_SIZE];
-        int n = 0;
-        while (_mySerial.available() && n < MAX_BUF_SIZE) {
-            echo[n] = _mySerial.read();
-            echoCmd[n] = _mySerial.readParity();
-            optoRxEdges++;
-            n++;
-        }
-        while (_mySerial.available()) { _mySerial.read(); optoRxEdges++; }   // anything beyond that
-
-        bool ok = (n == bytes);
-        for (int i = 0; ok && i < bytes; i++) {
-            if (echo[i] != cmd[i] || echoCmd[i] != (i == 0)) ok = false;
-        }
-        if (seatalkDebugTx) {
-            // '*' marks a byte received with the command (9th) bit set
-            int pos = snprintf(logbuf, LOGBUF_SIZE, "ST TX echo (%d/%d bytes): ", n, bytes);
-            for (int i = 0; i < n && pos < LOGBUF_SIZE - 6; i++)
-                pos += snprintf(logbuf + pos, LOGBUF_SIZE - pos, "%02X%s ", echo[i], echoCmd[i] ? "*" : "");
-            snprintf(logbuf + pos, LOGBUF_SIZE - pos, "-> %s", ok ? "OK" : "MISMATCH");
-            log::toAll(logbuf);
-        }
-        digitalWrite(LED_PIN, LOW);
-
-        if (ok) {
-            stTxPackets++;
-            delay(50);
-            return true;
-        }
-        // No automatic retry yet: if the echo check itself were wrong, a retry
-        // would repeat course changes (+10 sent five times). Count it and stop.
-        attempt = maxRetries;
-    }
-
-    stTxFails++;
-    if (seatalkDebugTx) {
-        snprintf(logbuf, LOGBUF_SIZE, "Send Failed: cmd=0x%02X, echo did not match (total fails=%lu)",
-            cmd[0], stTxFails);
-        log::toAll(logbuf);
-    }
-    digitalWrite(LED_PIN, LOW);
-    return false;
-}
-
-/// @brief Checks bus clear to write by waiting for a silence gap
-/// Waits until no data is received for 12ms, indicating end of a bus message
-void SeaTalk::checkClearToWrite()
-{
-    unsigned long lastActivity = millis();
-    unsigned long startWait = lastActivity;
-    int bytesSkipped = 0;
-
-    while (millis() - lastActivity < 12)
-    {
-        if (_mySerial.available())
-        {
-            _mySerial.read();
-            optoRxEdges++;
-            lastActivity = millis();
-            bytesSkipped++;
-        }
-    }
-
-    unsigned long waitTime = millis() - startWait;
-    if ((bytesSkipped > 0 || waitTime > 20) && seatalkDebugTx) {
-        snprintf(logbuf, LOGBUF_SIZE, "CTS: waited %lums, skipped %d bytes", waitTime, bytesSkipped);
-        log::toAll(logbuf);
-    }
 }
