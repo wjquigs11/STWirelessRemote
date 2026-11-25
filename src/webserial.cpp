@@ -28,6 +28,13 @@ void myAppHandler(String* words, int totalWords) {
         if (ms > 3000) ms = 3000;
         seatalk->optoProbe((unsigned long)ms);
       }
+      else if (words[1] == "loopback") {
+        // optional half-period in us, default 208 (one bit at 4800 baud), 20..5000
+        long us = (totalWords > 2) ? words[2].toInt() : 208;
+        if (us < 20) us = 20;
+        if (us > 5000) us = 5000;
+        seatalk->loopbackTest((unsigned long)us);
+      }
       else if (words[1] == "txhold") {
         // optional duration in ms, default 10000, capped so the bus is never jammed for long
         long ms = (totalWords > 2) ? words[2].toInt() : 10000;
@@ -35,9 +42,9 @@ void myAppHandler(String* words, int totalWords) {
         if (ms > 10000) ms = 10000;
         seatalk->txHold((unsigned long)ms);
       }
-      else log::toAll("st {auto|standby|+1|-1|+10|-10|wind|timer|probe [ms]|txhold [ms]}");
+      else log::toAll("st {auto|standby|+1|-1|+10|-10|wind|timer|probe [ms]|txhold [ms]|loopback [us]}");
     } else {
-      log::toAll("st {auto|standby|+1|-1|+10|-10|wind|timer|probe [ms]|txhold [ms]}");
+      log::toAll("st {auto|standby|+1|-1|+10|-10|wind|timer|probe [ms]|txhold [ms]|loopback [us]}");
     }
     return;
   }

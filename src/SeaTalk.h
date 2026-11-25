@@ -71,6 +71,10 @@ public:
     // TX path can be measured with a meter. Non-blocking: released by
     // processMessages(). Logs whether RX_IN saw DATA go low during the hold.
     void txHold(unsigned long durationMs = 10000);
+    // Diagnostic: toggle TX_OUT with digitalWrite (no SoftwareSerial) every halfUs
+    // and check that RX_IN follows (both stages invert, so RX_IN == TX_OUT).
+    // Logs matches and the worst response delay. Blocks for ~40 half-periods.
+    void loopbackTest(unsigned long halfUs = 208);
 
 private:
     SoftwareSerial _mySerial;

@@ -199,6 +199,45 @@ void SeaTalk::txHold(unsigned long durationMs)
     log::toAll(logbuf);
 }
 
+/// @brief Toggle TX_OUT directly and check RX_IN follows, without SoftwareSerial.
+/// Separates "hardware can't follow at bit speed" from "library doesn't receive
+/// while it transmits". Leaves TX_OUT LOW (SoftwareSerial idle) afterwards.
+void SeaTalk::loopbackTest(unsigned long halfUs)
+{
+    if (_txHolding) {
+        log::toAll("ST loopback: txhold in progress");
+        return;
+    }
+    const int halves = 40;
+    int matches = 0;
+    unsigned long worstUs = 0;
+    int neverFollowed = 0;
+    int level = HIGH;
+    for (int k = 0; k < halves; k++) {
+        digitalWrite(TX_OUT, level);
+        unsigned long t0 = micros();
+        unsigned long followUs = 0;
+        bool followed = false;
+        while (micros() - t0 < halfUs) {          // watch RX_IN for the whole half-period
+            if (!followed && digitalRead(RX_IN) == level) {
+                followed = true;
+                followUs = micros() - t0;
+            }
+        }
+        if (digitalRead(RX_IN) == level) matches++;   // state at the end of the half-period
+        if (followed) { if (followUs > worstUs) worstUs = followUs; }
+        else neverFollowed++;
+        level = (level == HIGH) ? LOW : HIGH;
+    }
+    digitalWrite(TX_OUT, LOW);                     // back to SoftwareSerial idle
+    delay(2);
+    while (_mySerial.available()) { _mySerial.read(); optoRxEdges++; }   // discard what the toggling decoded as
+    snprintf(logbuf, LOGBUF_SIZE,
+             "ST loopback %lu us: %d/%d half-periods matched at the end, %d never followed, worst delay %lu us",
+             halfUs, matches, halves, neverFollowed, worstUs);
+    log::toAll(logbuf);
+}
+
 /// @brief Sample RX_IN partway through a hold, and release TX_OUT when time is up.
 void SeaTalk::txHoldLoop()
 {
