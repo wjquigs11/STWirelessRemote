@@ -23,9 +23,9 @@ void myAppHandler(String* words, int totalWords) {
       else if (words[1] == "timer") { seatalk->sendCommand(start_timer); log::toAll("ST: timer"); }
       else if (words[1] == "probe") { seatalk->optoProbe(); }
       else if (words[1] == "txhold") {
-        // optional duration in ms, default 5000, capped so the bus is never jammed for long
-        long ms = (totalWords > 2) ? words[2].toInt() : 5000;
-        if (ms <= 0) ms = 5000;
+        // optional duration in ms, default 10000, capped so the bus is never jammed for long
+        long ms = (totalWords > 2) ? words[2].toInt() : 10000;
+        if (ms <= 0) ms = 10000;
         if (ms > 10000) ms = 10000;
         seatalk->txHold((unsigned long)ms);
       }
@@ -136,8 +136,21 @@ static String toggleList[] = {"debug", "log", ""};
 // ─── Command handler ───────────────────────────────────────────────────────────
 
 static void handleCommand(String dataS) {
+  static String lastCommand;   // for "!!" (repeat last command)
   dataS.trim();
   if (dataS.isEmpty()) return;
+
+  if (dataS == "!!") {
+    if (lastCommand.isEmpty()) {
+      log::toAll("!!: no previous command");
+      return;
+    }
+    dataS = lastCommand;
+    snprintf(logbuf, LOGBUF_SIZE, "!! %s", dataS.c_str());
+    log::toAll(logbuf);
+  } else {
+    lastCommand = dataS;
+  }
 
   // Tokenize
   String words[10];

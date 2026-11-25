@@ -64,7 +64,7 @@ public:
     // Diagnostic: hold TX_OUT HIGH (Q1 on, DATA pulled low) for durationMs so the
     // TX path can be measured with a meter. Non-blocking: released by
     // processMessages(). Logs whether RX_IN saw DATA go low during the hold.
-    void txHold(unsigned long durationMs = 5000);
+    void txHold(unsigned long durationMs = 10000);
 
 private:
     SoftwareSerial _mySerial;
