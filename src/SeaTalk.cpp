@@ -444,11 +444,13 @@ bool SeaTalk::send2ST(const uint8_t cmd[], int bytes)
         checkClearToWrite();
         digitalWrite(LED_PIN, HIGH);
 
-        // Transmit all bytes
+        // Transmit all bytes back to back. SoftwareSerial write() blocks for the
+        // whole byte (~2.3 ms at 4800 baud), so no extra delay: a gap longer than
+        // 10 bit times (~2.1 ms) tells other devices the bus is free, and they may
+        // start talking in the middle of this datagram.
         for (int i = 0; i < bytes; i++)
         {
             (i == 0) ? _mySerial.write(cmd[i], SWSERIAL_PARITY_MARK) : _mySerial.write(cmd[i], SWSERIAL_PARITY_SPACE);
-            delay(3);
         }
 
         // Flush any echoed bytes from RX buffer (if TX is looped back)

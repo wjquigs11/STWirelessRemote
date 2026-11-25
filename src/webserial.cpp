@@ -420,12 +420,34 @@ static void handleCommand(String dataS) {
 
 // ─── Entry points ──────────────────────────────────────────────────────────────
 
+// WebSerial calls this from the AsyncTCP task, not from loop(). Running commands
+// here would touch SoftwareSerial from two cores at once (loop() is reading it in
+// checkBus()), which corrupts its receive buffer and stops SeaTalk RX. So only
+// queue the text here; pollSerialConsole() runs it on the main loop.
+#define WS_CMD_MAX 128
+#define WS_CMD_QUEUE 4
+static QueueHandle_t wsCmdQueue = NULL;
+
 void WebSerialonMessage(uint8_t* data, size_t len) {
-  String input = String((char*)data).substring(0, len);
-  handleCommand(input);
+  if (wsCmdQueue == NULL) {
+    wsCmdQueue = xQueueCreate(WS_CMD_QUEUE, WS_CMD_MAX);
+    if (wsCmdQueue == NULL) return;
+  }
+  char buf[WS_CMD_MAX];
+  size_t n = (len < WS_CMD_MAX - 1) ? len : WS_CMD_MAX - 1;
+  memcpy(buf, data, n);
+  buf[n] = '\0';
+  xQueueSend(wsCmdQueue, buf, 0);   // non-blocking; drops the command if the queue is full
 }
 
 void pollSerialConsole() {
+  // Commands typed in WebSerial, queued by WebSerialonMessage()
+  if (wsCmdQueue != NULL) {
+    char buf[WS_CMD_MAX];
+    while (xQueueReceive(wsCmdQueue, buf, 0) == pdTRUE) {
+      handleCommand(String(buf));
+    }
+  }
   static String serialBuf;
   while (Serial.available()) {
     char c = Serial.read();
