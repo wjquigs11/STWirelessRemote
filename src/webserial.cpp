@@ -6,7 +6,7 @@ bool debugFlag = false;
 // ─── App-specific handlers ─────────────────────────────────────────────────────
 #define APPHANDLER
 String appCommandList[] = {"st", "wind", "n2k", "windtcp", ""};
-String appToggleList[] = {"stdebug", "n2kdebug", ""};
+String appToggleList[] = {"debug", "stdebug", "n2kdebug", ""};
 
 void myAppHandler(String* words, int totalWords) {
   String command = words[0];
@@ -22,9 +22,16 @@ void myAppHandler(String* words, int totalWords) {
       else if (words[1] == "wind") { seatalk->sendCommand(wind_mode); log::toAll("ST: wind"); }
       else if (words[1] == "timer") { seatalk->sendCommand(start_timer); log::toAll("ST: timer"); }
       else if (words[1] == "probe") { seatalk->optoProbe(); }
-      else log::toAll("st {auto|standby|+1|-1|+10|-10|wind|timer|probe}");
+      else if (words[1] == "txhold") {
+        // optional duration in ms, default 5000, capped so the bus is never jammed for long
+        long ms = (totalWords > 2) ? words[2].toInt() : 5000;
+        if (ms <= 0) ms = 5000;
+        if (ms > 10000) ms = 10000;
+        seatalk->txHold((unsigned long)ms);
+      }
+      else log::toAll("st {auto|standby|+1|-1|+10|-10|wind|timer|probe|txhold [ms]}");
     } else {
-      log::toAll("st {auto|standby|+1|-1|+10|-10|wind|timer|probe}");
+      log::toAll("st {auto|standby|+1|-1|+10|-10|wind|timer|probe|txhold [ms]}");
     }
     return;
   }

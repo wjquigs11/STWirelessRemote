@@ -61,12 +61,21 @@ public:
     // window and log idle level + min/max seen. Helps tell a dead RX leg from
     // a genuinely silent bus. Blocks ~durationMs; call from main thread only.
     void optoProbe(unsigned long durationMs = 300);
+    // Diagnostic: hold TX_OUT HIGH (Q1 on, DATA pulled low) for durationMs so the
+    // TX path can be measured with a meter. Non-blocking: released by
+    // processMessages(). Logs whether RX_IN saw DATA go low during the hold.
+    void txHold(unsigned long durationMs = 5000);
 
 private:
     SoftwareSerial _mySerial;
     SignalManager *_signalManager;
+    bool _txHolding = false;
+    unsigned long _txHoldStart = 0;    // millis() when the hold began
+    unsigned long _txHoldMs = 0;
+    int _txHoldRx = -1;                // RX_IN level sampled during the hold
 
     int checkBus();
+    void txHoldLoop();
     void checkClearToWrite();
     bool send2ST(const uint8_t cmd[], int bytes);
 };

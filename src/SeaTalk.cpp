@@ -157,7 +157,49 @@ void SeaTalk::optoProbe(unsigned long durationMs)
 /// @brief Method to run messages
 void SeaTalk::processMessages()
 {
+    txHoldLoop();
     checkBus();
+}
+
+/// @brief Start a TX hold: drive TX_OUT HIGH so Q1 pulls DATA low, for metering.
+/// SoftwareSerial (invert=true) idles TX_OUT LOW, so writing HIGH is the "active" state.
+/// Released by txHoldLoop(); refuses to start while one is already running.
+void SeaTalk::txHold(unsigned long durationMs)
+{
+    if (_txHolding) {
+        log::toAll("ST txhold: already holding");
+        return;
+    }
+    _txHoldMs = durationMs;
+    _txHoldRx = -1;
+    _txHoldStart = millis();
+    _txHolding = true;
+    digitalWrite(TX_OUT, HIGH);
+    snprintf(logbuf, LOGBUF_SIZE,
+             "ST txhold: TX_OUT(GPIO%d) HIGH for %lu ms. Measure now: GPIO%d ~3.3V, Q1 base ~0.7V, DATA <0.5V",
+             TX_OUT, durationMs, TX_OUT);
+    log::toAll(logbuf);
+}
+
+/// @brief Sample RX_IN partway through a hold, and release TX_OUT when time is up.
+void SeaTalk::txHoldLoop()
+{
+    if (!_txHolding) return;
+    unsigned long elapsed = millis() - _txHoldStart;
+    // Sample once, after the line has settled. Q2 inverts: DATA low -> RX_IN HIGH.
+    if (_txHoldRx < 0 && elapsed >= 200) {
+        _txHoldRx = digitalRead(RX_IN);
+    }
+    if (elapsed < _txHoldMs) return;
+    digitalWrite(TX_OUT, LOW);       // back to SoftwareSerial idle
+    _txHolding = false;
+    while (_mySerial.available()) _mySerial.read();   // discard bytes decoded from the held-low line
+    snprintf(logbuf, LOGBUF_SIZE,
+             "ST txhold: released. During hold RX_IN(GPIO%d)=%d -> %s",
+             RX_IN, _txHoldRx,
+             _txHoldRx == 1 ? "DATA went LOW: TX reaches the bus"
+                            : "DATA stayed HIGH: TX does NOT reach the bus (check Q1, R_b1, GPIO26 wire)");
+    log::toAll(logbuf);
 }
 
 /// @brief Checks the seatalk bus for messages
@@ -383,6 +425,11 @@ bool SeaTalk::send2ST(const uint8_t cmd[], int bytes)
 {
     int attempt = 0;
     const int maxRetries = 5;
+
+    if (_txHolding) {
+        log::toAll("ST TX skipped: txhold in progress");
+        return false;
+    }
 
     if (seatalkDebugTx) {
         snprintf(logbuf, LOGBUF_SIZE, "ST TX: cmd=0x%02X len=%d [%02X %02X %02X %02X]",
