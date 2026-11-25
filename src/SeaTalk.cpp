@@ -453,25 +453,49 @@ bool SeaTalk::send2ST(const uint8_t cmd[], int bytes)
             (i == 0) ? _mySerial.write(cmd[i], SWSERIAL_PARITY_MARK) : _mySerial.write(cmd[i], SWSERIAL_PARITY_SPACE);
         }
 
-        // Flush any echoed bytes from RX buffer (if TX is looped back)
-        delay(5);
-        while (_mySerial.available()) { _mySerial.read(); optoRxEdges++; }
+        // Read back the echo. TX and RX share the DATA line, so every byte we send
+        // is received too (as in AK-Homberger's remote). Compare byte and command
+        // bit; a mismatch means a collision or a bad line, so back off and retry.
+        delay(5);   // let the last stop bit be detected
+        uint8_t echo[MAX_BUF_SIZE];
+        bool echoCmd[MAX_BUF_SIZE];
+        int n = 0;
+        while (_mySerial.available() && n < MAX_BUF_SIZE) {
+            echo[n] = _mySerial.read();
+            echoCmd[n] = _mySerial.readParity();
+            optoRxEdges++;
+            n++;
+        }
+        while (_mySerial.available()) { _mySerial.read(); optoRxEdges++; }   // anything beyond that
 
-        // Assume success (no echo verification possible on this hardware)
-        digitalWrite(LED_PIN, LOW);
-        stTxPackets++;
+        bool ok = (n == bytes);
+        for (int i = 0; ok && i < bytes; i++) {
+            if (echo[i] != cmd[i] || echoCmd[i] != (i == 0)) ok = false;
+        }
         if (seatalkDebugTx) {
-            snprintf(logbuf, LOGBUF_SIZE, "ST TX OK: cmd=0x%02X after %d attempt(s)", cmd[0], attempt + 1);
+            // '*' marks a byte received with the command (9th) bit set
+            int pos = snprintf(logbuf, LOGBUF_SIZE, "ST TX echo (%d/%d bytes): ", n, bytes);
+            for (int i = 0; i < n && pos < LOGBUF_SIZE - 6; i++)
+                pos += snprintf(logbuf + pos, LOGBUF_SIZE - pos, "%02X%s ", echo[i], echoCmd[i] ? "*" : "");
+            snprintf(logbuf + pos, LOGBUF_SIZE - pos, "-> %s", ok ? "OK" : "MISMATCH");
             log::toAll(logbuf);
         }
-        delay(50);
-        return true;
+        digitalWrite(LED_PIN, LOW);
+
+        if (ok) {
+            stTxPackets++;
+            delay(50);
+            return true;
+        }
+        // No automatic retry yet: if the echo check itself were wrong, a retry
+        // would repeat course changes (+10 sent five times). Count it and stop.
+        attempt = maxRetries;
     }
 
     stTxFails++;
     if (seatalkDebugTx) {
-        snprintf(logbuf, LOGBUF_SIZE, "Send Failed: cmd=0x%02X after %d attempts (total fails=%lu)",
-            cmd[0], maxRetries, stTxFails);
+        snprintf(logbuf, LOGBUF_SIZE, "Send Failed: cmd=0x%02X, echo did not match (total fails=%lu)",
+            cmd[0], stTxFails);
         log::toAll(logbuf);
     }
     digitalWrite(LED_PIN, LOW);

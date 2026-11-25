@@ -21,7 +21,13 @@ void myAppHandler(String* words, int totalWords) {
       else if (words[1] == "-10") { seatalk->sendCommand(minus_10); log::toAll("ST: -10"); }
       else if (words[1] == "wind") { seatalk->sendCommand(wind_mode); log::toAll("ST: wind"); }
       else if (words[1] == "timer") { seatalk->sendCommand(start_timer); log::toAll("ST: timer"); }
-      else if (words[1] == "probe") { seatalk->optoProbe(); }
+      else if (words[1] == "probe") {
+        // optional sample window in ms (blocks the main loop), default 300, max 3000
+        long ms = (totalWords > 2) ? words[2].toInt() : 300;
+        if (ms <= 0) ms = 300;
+        if (ms > 3000) ms = 3000;
+        seatalk->optoProbe((unsigned long)ms);
+      }
       else if (words[1] == "txhold") {
         // optional duration in ms, default 10000, capped so the bus is never jammed for long
         long ms = (totalWords > 2) ? words[2].toInt() : 10000;
@@ -29,9 +35,9 @@ void myAppHandler(String* words, int totalWords) {
         if (ms > 10000) ms = 10000;
         seatalk->txHold((unsigned long)ms);
       }
-      else log::toAll("st {auto|standby|+1|-1|+10|-10|wind|timer|probe|txhold [ms]}");
+      else log::toAll("st {auto|standby|+1|-1|+10|-10|wind|timer|probe [ms]|txhold [ms]}");
     } else {
-      log::toAll("st {auto|standby|+1|-1|+10|-10|wind|timer|probe|txhold [ms]}");
+      log::toAll("st {auto|standby|+1|-1|+10|-10|wind|timer|probe [ms]|txhold [ms]}");
     }
     return;
   }
