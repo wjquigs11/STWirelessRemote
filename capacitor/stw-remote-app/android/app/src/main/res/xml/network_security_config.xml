@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Allow cleartext (plain HTTP) traffic. The app is served over https://localhost
+  inside the WebView, but talks to the ST2000 remote ESP32 on the LAN over plain
+  HTTP (http://<ip-or-.local>). A public HTTPS host may still be used when a
+  reverse proxy is configured; this only relaxes the local HTTP hop.
+  The controller host is user-configurable, so cleartext is permitted broadly.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

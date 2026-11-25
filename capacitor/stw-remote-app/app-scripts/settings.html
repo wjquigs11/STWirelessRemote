@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>ST2000 Remote App Settings</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="app-menu.css">
+    <link rel="stylesheet" href="app-settings.css">
+    <script src="device-config.js"></script>
+  </head>
+  <body class="app-settings-body">
+    <main class="app-settings-content">
+      <h1>App Settings</h1>
+      <form id="controller-form">
+        <label for="controller-host">ESP32 hostname or IP address</label>
+        <input id="controller-host" name="controller-host" type="text"
+               inputmode="url" autocapitalize="none" autocorrect="off"
+               spellcheck="false" placeholder="ESPmcu.local" required>
+        <p class="app-settings-help">
+          The app connects to the ESP32 Server-Sent Events endpoint at
+          <code>/events</code>.
+        </p>
+        <p id="controller-status" class="app-settings-status" role="status"></p>
+        <div class="app-settings-actions">
+          <button type="submit">Save</button>
+          <button type="button" id="controller-test">Test</button>
+          <a href="/">Cancel</a>
+        </div>
+      </form>
+    </main>
+    <script src="app-settings.js"></script>
+    <script src="app-menu.js"></script>
+  </body>
+</html>

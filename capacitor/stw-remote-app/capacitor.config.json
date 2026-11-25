@@ -1,0 +1,17 @@
+{
+  "appId": "click.quigs.stwremote",
+  "appName": "ST2000 Remote",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true
+  },
+  "android": {
+    "allowMixedContent": true
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": true
+    }
+  }
+}

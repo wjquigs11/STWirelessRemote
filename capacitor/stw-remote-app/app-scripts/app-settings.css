@@ -1,0 +1,67 @@
+.app-settings-body {
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: 64px 16px 24px;
+  background: #edf1f4;
+  color: #17212b;
+}
+.app-settings-content {
+  width: min(100%, 520px);
+  box-sizing: border-box;
+  margin: 0 auto;
+  padding: 24px;
+  border: 1px solid #c9d0d6;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+.app-settings-content h1 {
+  margin: 0 0 24px;
+  color: #17212b;
+  font-size: 1.6rem;
+}
+.app-settings-content label {
+  display: block;
+  margin-bottom: 8px;
+  color: #26343d;
+  font-weight: 700;
+}
+.app-settings-content input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  border: 1px solid #8d9aa3;
+  border-radius: 4px;
+  font: inherit;
+}
+.app-settings-help {
+  color: #5c6d78;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+.app-settings-status {
+  min-height: 1.2em;
+  color: #b3261e;
+  font-size: 0.9rem;
+}
+.app-settings-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+.app-settings-actions button,
+.app-settings-actions a {
+  padding: 8px 18px;
+  border: 1px solid #536b7b;
+  border-radius: 4px;
+  background: #fff;
+  color: #26343d;
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+.app-settings-actions button {
+  background: #263f50;
+  color: #fff;
+}
