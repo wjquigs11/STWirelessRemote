@@ -39,10 +39,14 @@ void SeaTalk::logOptoPins()
     log::toAll(logbuf);
 }
 
-// ── Opto GPIO state-change monitoring ──────────────────────────────────────
-// Edge counters updated from GPIO interrupts. volatile: shared with ISRs.
-static volatile unsigned long optoRxEdges = 0;
-static volatile unsigned long optoTxEdges = 0;
+// ── Bus activity monitoring (tog optolog, /optolog) ────────────────────────
+// RX: bytes decoded by SoftwareSerial, counted where they are read. There must be
+// NO extra interrupt on RX_IN: an ESP32 pin has one ISR, and attaching one there
+// replaces SoftwareSerial's receive ISR (and detaching it kills RX until reboot).
+// TX: edges on TX_OUT via a GPIO interrupt. Safe: SoftwareSerial uses no ISR on TX.
+// Own transmissions that reach the bus come back as RX bytes (echo).
+static volatile unsigned long optoRxEdges = 0;   // RX bytes (name kept for the counters below)
+static volatile unsigned long optoTxEdges = 0;   // TX edges
 // Running totals since counters were last read by getOptoChanges().
 static volatile unsigned long optoRxEdgesLast = 0;
 static volatile unsigned long optoTxEdgesLast = 0;
@@ -50,11 +54,10 @@ static unsigned long optoLastReadMs = 0;
 static bool optoLogEnabled = false;
 static bool optoIsrAttached = false;
 
-static void IRAM_ATTR optoRxIsr() { optoRxEdges++; }
 static void IRAM_ATTR optoTxIsr() { optoTxEdges++; }
 
-/// @brief Enable/disable opto edge monitoring and per-change logging.
-/// Attaches CHANGE interrupts on both opto pins on first enable.
+/// @brief Enable/disable bus activity monitoring and the once-per-second log.
+/// Attaches a CHANGE interrupt on TX_OUT only (never on RX_IN, see above).
 void SeaTalk::setOptoLog(bool on)
 {
     if (on && !optoIsrAttached) {
@@ -63,11 +66,9 @@ void SeaTalk::setOptoLog(bool on)
         optoRxEdges = optoTxEdges = 0;
         optoRxEdgesLast = optoTxEdgesLast = 0;
         optoLastReadMs = millis();
-        attachInterrupt(digitalPinToInterrupt(RX_IN), optoRxIsr, CHANGE);
         attachInterrupt(digitalPinToInterrupt(TX_OUT), optoTxIsr, CHANGE);
         optoIsrAttached = true;
     } else if (!on && optoIsrAttached) {
-        detachInterrupt(digitalPinToInterrupt(RX_IN));
         detachInterrupt(digitalPinToInterrupt(TX_OUT));
         optoIsrAttached = false;
     }
@@ -124,7 +125,7 @@ void SeaTalk::optoLogLoop()
     optoTxEdgesLast = 0;
 
     snprintf(logbuf, LOGBUF_SIZE,
-             "ST opto edges/s: RX_IN(GPIO%d)=%lu TX_OUT(GPIO%d)=%lu",
+             "ST bus/s: RX bytes(GPIO%d)=%lu TX edges(GPIO%d)=%lu",
              RX_IN, rxCount, TX_OUT, txCount);
     log::toAll(logbuf);
 }
@@ -193,7 +194,7 @@ void SeaTalk::txHoldLoop()
     if (elapsed < _txHoldMs) return;
     digitalWrite(TX_OUT, LOW);       // back to SoftwareSerial idle
     _txHolding = false;
-    while (_mySerial.available()) _mySerial.read();   // discard bytes decoded from the held-low line
+    while (_mySerial.available()) { _mySerial.read(); optoRxEdges++; }   // discard bytes decoded from the held-low line
     snprintf(logbuf, LOGBUF_SIZE,
              "ST txhold: released. During hold RX_IN(GPIO%d)=%d -> %s",
              RX_IN, _txHoldRx,
@@ -212,6 +213,7 @@ int SeaTalk::checkBus()
     {
         uint8_t inByte = _mySerial.read();
         bool parity = _mySerial.readParity();
+        optoRxEdges++;
 
         if (parity) // Command byte received
         {
@@ -451,7 +453,7 @@ bool SeaTalk::send2ST(const uint8_t cmd[], int bytes)
 
         // Flush any echoed bytes from RX buffer (if TX is looped back)
         delay(5);
-        while (_mySerial.available()) _mySerial.read();
+        while (_mySerial.available()) { _mySerial.read(); optoRxEdges++; }
 
         // Assume success (no echo verification possible on this hardware)
         digitalWrite(LED_PIN, LOW);
@@ -487,6 +489,7 @@ void SeaTalk::checkClearToWrite()
         if (_mySerial.available())
         {
             _mySerial.read();
+            optoRxEdges++;
             lastActivity = millis();
             bytesSkipped++;
         }

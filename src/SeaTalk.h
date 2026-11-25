@@ -45,14 +45,14 @@ public:
     void sendApparentWindSpeed(double speedKnots);
     void logOptoPins();  // log SeaTalk opto GPIO assignments and current pin states
 
-    // ── Opto GPIO state-change monitoring ──────────────────────────────────
-    // Counts edges (state changes) on the opto RX_IN and TX_OUT pins via GPIO
-    // interrupts. Intended to show whether there is any activity on the
-    // SeaTalk bus. setOptoLog() turns the per-change serial logging on/off.
+    // ── Bus activity monitoring ────────────────────────────────────────────
+    // Counts bytes received by SoftwareSerial on RX_IN, and edges on TX_OUT (GPIO
+    // interrupt). No interrupt is attached to RX_IN: that would replace
+    // SoftwareSerial's own receive ISR. setOptoLog() turns the 1 s log on/off.
     void setOptoLog(bool on);
     bool getOptoLog() const;
-    // Returns edge counts since the previous call to this method, and resets
-    // the counters. Writes rxChanges / txChanges and the elapsed interval (ms).
+    // Returns RX bytes / TX edges since the previous call, and resets the window.
+    // Writes rxChanges / txChanges and the elapsed interval (ms).
     void getOptoChanges(unsigned long &rxChanges, unsigned long &txChanges,
                         unsigned long &intervalMs);
     // Drain and emit pending per-change log lines; call from loop().
