@@ -30,12 +30,16 @@ class SeaTalk
 public:
     SeaTalk(SignalManager *signalManager);
 
-    const uint8_t ST_Minus_1[4] = {0x86, 0x21, 0x05, 0xFA};
-    const uint8_t ST_Minus_10[4] = {0x86, 0x21, 0x06, 0xF9};
-    const uint8_t ST_Plus_1[4] = {0x86, 0x21, 0x07, 0xF8};
-    const uint8_t ST_Plus_10[4] = {0x86, 0x21, 0x08, 0xF7};
-    const uint8_t ST_Auto[4] = {0x86, 0x21, 0x01, 0xFE};
-    const uint8_t ST_Standby[4] = {0x86, 0x21, 0x02, 0xFD};
+    // Keystroke datagrams (Knauf command 86). The second byte is X1: X=1 is the
+    // Z101 remote-control format, which the ST2000+ obeys (signalk-seatalk1-autopilot
+    // marks these "tested ok on ST2000+"). X=2 (0x21) is the ST4000+/ST600R control
+    // head format; only Wind uses it, as in that plugin.
+    const uint8_t ST_Minus_1[4] = {0x86, 0x11, 0x05, 0xFA};
+    const uint8_t ST_Minus_10[4] = {0x86, 0x11, 0x06, 0xF9};
+    const uint8_t ST_Plus_1[4] = {0x86, 0x11, 0x07, 0xF8};
+    const uint8_t ST_Plus_10[4] = {0x86, 0x11, 0x08, 0xF7};
+    const uint8_t ST_Auto[4] = {0x86, 0x11, 0x01, 0xFE};
+    const uint8_t ST_Standby[4] = {0x86, 0x11, 0x02, 0xFD};
     const uint8_t ST_Wind[4] = {0x86, 0x21, 0x23, 0xDC};
     const uint8_t ST_TimerStart[5] = {0x59, 0x22, 0x00, 0x05, 0x80};
     void processMessages();
