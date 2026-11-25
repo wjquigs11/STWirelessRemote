@@ -258,6 +258,7 @@ bool SeaTalk::sendDatagram(const uint8_t data[], int size)
 
     int j = 0;
     int i = 0;
+    int want = 0, got = 0;                           // last compared byte, for the log
     while (j < 5) {                                  // CSMA/CD, 5 tries
         while (_mySerial.available()) {              // wait for silence on the bus
             _mySerial.read();
@@ -275,6 +276,8 @@ bool SeaTalk::sendDatagram(const uint8_t data[], int size)
             unsigned long t0 = micros();
             while (!_mySerial.available() && micros() - t0 < ST_ECHO_WAIT_US) {}
             int inbyte = read9();
+            want = outbyte;
+            got = inbyte;
             if (inbyte < 0) ok = false;              // nothing received
             else if (inbyte != outbyte) ok = false;  // not what we sent: collision
         }
@@ -291,7 +294,12 @@ bool SeaTalk::sendDatagram(const uint8_t data[], int size)
         }
         j++;                                         // collision detected
         if (seatalkDebugTx) {
-            snprintf(logbuf, LOGBUF_SIZE, "ST TX collision: %02X at byte %d, try %d", data[0], i - 1, j);
+            // 9-bit values: 1xx = command bit set. "none" = no echo within 3 ms.
+            char gotStr[8];
+            if (got < 0) snprintf(gotStr, sizeof(gotStr), "none");
+            else snprintf(gotStr, sizeof(gotStr), "%03X", got);
+            snprintf(logbuf, LOGBUF_SIZE, "ST TX collision: %02X byte %d sent %03X got %s, try %d",
+                     data[0], i - 1, want, gotStr, j);
             log::toAll(logbuf);
         }
         delay(random(2, 50));                        // random wait for next try
