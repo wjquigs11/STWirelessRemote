@@ -157,6 +157,7 @@ void setup() {
   headingOffset = webOpts.headingOffset;
   xmitHeading = webOpts.xmitHeading;
   windXmitHz = webOpts.windXmitHz;
+  n2kDebug = webOpts.n2kDebug;
 #endif
 #endif
 

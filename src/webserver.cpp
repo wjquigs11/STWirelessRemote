@@ -68,6 +68,7 @@ void startAppWebServer() {
     response->printf("\"windtcp\": %s, \n", (windClient && windClient->enabled) ? "true" : "false");
     response->printf("\"seatalkDebugRx\": %s, \n", webOptions.seatalkDebugRx ? "true" : "false");
     response->printf("\"seatalkDebugTx\": %s, \n", webOptions.seatalkDebugTx ? "true" : "false");
+    response->printf("\"n2kDebug\": %s, \n", webOptions.n2kDebug ? "true" : "false");
     response->printf("\"headingOffset\": %d, \n", webOptions.headingOffset);
     response->printf("\"xmitHeading\": %s, \n", webOptions.xmitHeading ? "true" : "false");
     response->printf("\"windXmitHz\": %.1f, \n", webOptions.windXmitHz);
@@ -92,6 +93,7 @@ void startAppWebServer() {
     if (request->hasParam("windhost", true)) webOptions.windhost = request->getParam("windhost", true)->value();
     webOptions.seatalkDebugRx = request->hasParam("seatalkDebugRx", true);
     webOptions.seatalkDebugTx = request->hasParam("seatalkDebugTx", true);
+    webOptions.n2kDebug = request->hasParam("n2kDebug", true);
     if (request->hasParam("headingOffset", true)) webOptions.headingOffset = request->getParam("headingOffset", true)->value().toInt();
     webOptions.xmitHeading = request->hasParam("xmitHeading", true);
     if (request->hasParam("windXmitHz", true)) webOptions.windXmitHz = request->getParam("windXmitHz", true)->value().toFloat();
@@ -106,6 +108,9 @@ void startAppWebServer() {
 #endif
     seatalkDebugRx = webOptions.seatalkDebugRx;
     seatalkDebugTx = webOptions.seatalkDebugTx;
+#ifdef N2K
+    n2kDebug = webOptions.n2kDebug;
+#endif
     trollDegreesPerTurn = webOptions.trollDegreesPerTurn;
     trollTimePerDegreeMs = webOptions.trollTimePerDegreeMs;
     request->send(200);

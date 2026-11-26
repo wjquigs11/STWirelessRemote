@@ -65,6 +65,11 @@ function SetOptions(data) {
     if (debugTxCb) {
         debugTxCb.checked = data.seatalkDebugTx === true || data.seatalkDebugTx === 1;
     }
+    // N2K debug toggle
+    var n2kDebugCb = document.getElementById("n2kDebug");
+    if (n2kDebugCb) {
+        n2kDebugCb.checked = data.n2kDebug === true || data.n2kDebug === 1;
+    }
     // N2K heading settings
     var headingOffsetEl = document.getElementById("headingOffset");
     if (headingOffsetEl) {

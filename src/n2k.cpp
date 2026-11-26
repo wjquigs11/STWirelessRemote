@@ -54,13 +54,28 @@ static void OnN2kOpen() {
   log::toAll("N2K: CAN bus open");
 }
 
+// n2kDebug: print one incoming message in full (header + data bytes in hex).
+// WebSerial only, so a busy bus does not also flood USB serial and console.log.
+static void n2kDebugPrint(const tN2kMsg &m) {
+#ifdef WEBSERIAL
+  extern bool serverStarted;
+  if (!serverStarted) return;
+  static char line[96 + 3 * tN2kMsg::MaxDataLen];
+  int pos = snprintf(line, sizeof(line), "N2K PGN %lu pri %d src %d dst %d len %d:",
+                     m.PGN, m.Priority, m.Source, m.Destination, m.DataLen);
+  for (int i = 0; i < m.DataLen && pos < (int)sizeof(line) - 4; i++)
+    pos += snprintf(line + pos, sizeof(line) - pos, " %02X", m.Data[i]);
+  WebSerial.println(line);
+#else
+  snprintf(logbuf, LOGBUF_SIZE, "N2K PGN %lu src %d len %d", m.PGN, m.Source, m.DataLen);
+  log::toAll(logbuf);
+#endif
+}
+
 static void HandleN2kMsg(const tN2kMsg &N2kMsg) {
   n2kMsgCount++;
 
-  if (n2kDebug) {
-    snprintf(logbuf, LOGBUF_SIZE, "N2K PGN %lu src %d len %d", N2kMsg.PGN, N2kMsg.Source, N2kMsg.DataLen);
-    log::toAll(logbuf);
-  }
+  if (n2kDebug) n2kDebugPrint(N2kMsg);
 
   switch (N2kMsg.PGN) {
     case 130306L: { // Wind Data
